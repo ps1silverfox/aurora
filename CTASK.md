@@ -118,7 +118,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests for repository methods (mock `OracleService`)
 - Files: `oracle/migrations/0001_users.sql`, `src/users/entities/user.entity.ts`, `src/users/entities/role.entity.ts`, `src/users/users.repository.ts`
 
-### [ ] TS-1.3 — User sync and roles service
+### [x] TS-1.3 — User sync and roles service
 - Create `src/users/users.service.ts`:
   - `syncFromToken(claims)` — upsert user from Keycloak JWT claims on first login
   - `assignRole(userId, roleId)` — assign role with permission check
@@ -132,7 +132,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests: permission granted, permission denied, role not found
 - Files: `src/users/users.service.ts`, `src/users/roles.service.ts`, `src/users/roles.guard.ts`, `src/users/roles.decorator.ts`
 
-### [ ] TS-1.4 — Hash-chained audit log (Oracle PL/SQL)
+### [x] TS-1.4 — Hash-chained audit log (Oracle PL/SQL)
 - Create `oracle/migrations/0002_audit_log.sql`:
   - `AUDIT_LOG` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `ACTOR_ID RAW(16)`, `ACTION VARCHAR2(100) NOT NULL`, `ENTITY_TYPE VARCHAR2(100)`, `ENTITY_ID VARCHAR2(255)`, `DIFF CLOB CHECK (DIFF IS JSON)`, `PREV_HASH VARCHAR2(64)`, `HASH VARCHAR2(64) NOT NULL`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`
   - PL/SQL package `oracle/packages/audit_pkg.sql`: `PROCEDURE INSERT_ENTRY(p_actor_id, p_action, p_entity_type, p_entity_id, p_diff)` — computes SHA-256 hash over (prev_hash || actor_id || action || entity_type || entity_id || diff || created_at), inserts row. Hash chain is tamper-evident.
