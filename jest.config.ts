@@ -9,6 +9,7 @@ const config: Config = {
   coverageDirectory: 'coverage',
   testEnvironment: 'node',
   testPathIgnorePatterns: ['/node_modules/', '\\.integration\\.spec\\.ts$', '\\.e2e\\.spec\\.ts$'],
+  transformIgnorePatterns: ['node_modules/(?!(jwks-rsa|jose)/)'],
 };
 
 export default config;
