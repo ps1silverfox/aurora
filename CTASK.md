@@ -142,7 +142,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests for `AuditService` (mock OracleService, verify correct bind vars passed)
 - Files: `oracle/migrations/0002_audit_log.sql`, `oracle/packages/audit_pkg.sql`, `src/audit/audit.service.ts`, `src/audit/audit.module.ts`
 
-### [ ] TS-1.5 — Users and audit API endpoints
+### [x] TS-1.5 — Users and audit API endpoints
 - Create `src/users/users.controller.ts`:
   - `GET /api/v1/users` — list users (cursor-paginated, max 100). Requires `admin.users.read` permission.
   - `GET /api/v1/users/:id` — single user. Requires `admin.users.read`.
