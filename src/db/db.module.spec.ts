@@ -14,7 +14,7 @@ describe('DbModule.forRoot()', () => {
     jest.spyOn(OracleDriver.prototype, 'onModuleDestroy').mockResolvedValue(undefined);
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     if (originalDriver === undefined) {
       delete process.env['DB_DRIVER'];
     } else {

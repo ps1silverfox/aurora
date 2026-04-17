@@ -64,7 +64,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Add `nginx.conf`: `/api/*` → NestJS, `/admin/*` → frontend SPA static, `/*` → SSR endpoint
 - Files: `docker-compose.yml`, `Dockerfile`, `docker/oracle/init/01_create_users.sql`, `docker/nginx/nginx.conf`
 
-### [ ] TS-0.4 — Frontend scaffolding
+### [x] TS-0.4 — Frontend scaffolding
 - Init Vite + React 18 + TypeScript in `frontend/`
 - Configure `frontend/tsconfig.json` with `strict: true`
 - Set up ESLint + Prettier for frontend
@@ -73,7 +73,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Create typed API client base: `frontend/src/api/client.ts` (fetch wrapper with auth header injection)
 - Files: `frontend/package.json`, `frontend/vite.config.ts`, `frontend/src/main.tsx`, `frontend/src/app/App.tsx`, `frontend/src/api/client.ts`
 
-### [ ] TS-0.5 — Development tooling & CI
+### [x] TS-0.5 — Development tooling & CI
 - Configure ESLint: `eslint.config.ts` — `@typescript-eslint/recommended-strict`, no `any`, no floating promises
 - Configure Prettier: `prettier.config.ts`
 - Add `license-policy.json`: allowed MIT/Apache-2.0/BSD-2/BSD-3/ISC, prohibited GPL/AGPL/SSPL/LGPL

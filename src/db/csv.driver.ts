@@ -27,6 +27,13 @@ function resolveBinds(binds?: Record<string, unknown> | unknown[]): Record<strin
   return binds;
 }
 
+function toBindString(v: unknown): string {
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint') return String(v);
+  return '';
+}
+
 function extractTableName(sql: string, keyword: 'FROM' | 'INTO' | 'UPDATE'): string {
   const m = sql.match(new RegExp(`${keyword}\\s+(\\w+)`, 'i'));
   if (!m?.[1]) throw new Error(`Cannot extract table from SQL near "${keyword}"`);
@@ -47,7 +54,7 @@ function buildWhereFilter(
       if (!eq) return true;
       const col = (eq[1] ?? '').toUpperCase();
       const bindName = eq[2] ?? '';
-      return String(row[col] ?? '') === String(binds[bindName] ?? '');
+      return (row[col] ?? '') === toBindString(binds[bindName]);
     });
 }
 
@@ -89,15 +96,17 @@ export class CsvDriver implements IDbService, OnModuleInit {
     this.logger.debug(`Loaded ${files.length} CSV fixture table(s)`);
   }
 
-  async query<T>(sql: string, binds?: Record<string, unknown> | unknown[]): Promise<T[]> {
+  query<T>(sql: string, binds?: Record<string, unknown> | unknown[]): Promise<T[]> {
     const resolved = resolveBinds(binds);
     const tableName = extractTableName(sql, 'FROM');
     const rows = this.tables.get(tableName) ?? [];
     const filter = buildWhereFilter(sql, resolved);
-    return rows.filter(filter).map((row) => selectColumns(row, sql)) as unknown as T[];
+    return Promise.resolve(
+      rows.filter(filter).map((row) => selectColumns(row, sql)) as unknown as T[],
+    );
   }
 
-  async execute(sql: string, binds?: Record<string, unknown> | unknown[]): Promise<void> {
+  execute(sql: string, binds?: Record<string, unknown> | unknown[]): Promise<void> {
     const resolved = resolveBinds(binds);
     const upper = sql.trimStart().toUpperCase();
     if (upper.startsWith('INSERT')) {
@@ -108,6 +117,7 @@ export class CsvDriver implements IDbService, OnModuleInit {
       this.handleDelete(sql, resolved);
     }
     // DDL and other statements are no-ops in CSV mode
+    return Promise.resolve();
   }
 
   async executeBatch(
@@ -132,12 +142,16 @@ export class CsvDriver implements IDbService, OnModuleInit {
     cols.forEach((col, i) => {
       const bm = (vals[i] ?? '').match(/^:(\w+)$/);
       row[col] = bm
-        ? String(binds[bm[1] ?? ''] ?? '')
+        ? toBindString(binds[bm[1] ?? ''])
         : (vals[i] ?? '').replace(/^'|'$/g, '');
     });
 
-    if (!this.tables.has(tableName)) this.tables.set(tableName, []);
-    this.tables.get(tableName)!.push(row);
+    let table = this.tables.get(tableName);
+    if (!table) {
+      table = [];
+      this.tables.set(tableName, table);
+    }
+    table.push(row);
   }
 
   private handleUpdate(sql: string, binds: Record<string, unknown>): void {
@@ -151,13 +165,15 @@ export class CsvDriver implements IDbService, OnModuleInit {
     const sm = sql.match(/SET\s+(.+?)(?:\s+WHERE|\s*$)/i);
     if (!sm?.[1]) return;
 
-    const assignments = (sm[1] ?? '').split(',').map((a) => {
-      const [colPart, valPart] = a.split('=').map((s) => s.trim());
-      const bm = (valPart ?? '').match(/^:(\w+)$/);
+    const assignments = sm[1].split(',').map((a) => {
+      const parts = a.split('=').map((s) => s.trim());
+      const colPart = parts[0] ?? '';
+      const valPart = parts[1];
+      const bm = valPart?.match(/^:(\w+)$/);
       return {
-        col: (colPart ?? '').toUpperCase(),
+        col: colPart.toUpperCase(),
         value: bm
-          ? String(binds[bm[1] ?? ''] ?? '')
+          ? toBindString(binds[bm[1] ?? ''])
           : (valPart ?? '').replace(/^'|'$/g, ''),
       };
     });

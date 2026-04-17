@@ -34,7 +34,7 @@ export class OracleDriver implements IDbService, OnModuleInit, OnModuleDestroy {
         (binds ?? {}) as oracledb.BindParameters,
         { outFormat: oracledb.OUT_FORMAT_OBJECT },
       );
-      return (result.rows ?? []) as T[];
+      return result.rows ?? [];
     } finally {
       await conn.close();
     }
