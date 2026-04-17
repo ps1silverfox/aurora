@@ -83,7 +83,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Create `.github/workflows/ci.yml`: lint → typecheck → license-check → unit tests → integration tests → build → e2e
 - Files: `eslint.config.ts`, `prettier.config.ts`, `license-policy.json`, `jest.config.ts`, `playwright.config.ts`, `.github/workflows/ci.yml`
 
-### [ ] TS-0.6 — Common utilities
+### [x] TS-0.6 — Common utilities
 - Create `src/common/result.ts` — `Result<T, E>` type and helpers (`ok`, `err`, `isOk`, `isErr`)
 - Create `src/common/pagination.ts` — cursor encoding/decoding (base64 JSON), `CursorPage<T>` type
 - Create `src/common/errors.ts` — `AppError` base class, subtypes (`NotFoundError`, `ForbiddenError`, `ConflictError`, `ValidationError`)
@@ -96,7 +96,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 1: Authentication & User Management
 
-### [ ] TS-1.1 — Keycloak JWT integration
+### [x] TS-1.1 — Keycloak JWT integration
 - Install `@nestjs/passport`, `passport`, `passport-jwt` (all MIT)
 - Create `src/auth/auth.module.ts`, `src/auth/jwt.strategy.ts`
 - `JwtStrategy` fetches Keycloak public keys from JWKS endpoint (`{KEYCLOAK_URL}/realms/{realm}/protocol/openid-connect/certs`)
@@ -107,7 +107,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests: valid token passes, expired token 401, missing token 401, unknown issuer 401
 - Files: `src/auth/auth.module.ts`, `src/auth/jwt.strategy.ts`, `src/auth/jwt-auth.guard.ts`, `src/auth/public.decorator.ts`, `src/auth/auth.controller.ts`
 
-### [ ] TS-1.2 — Users migration and model
+### [x] TS-1.2 — Users migration and model
 - Create `oracle/migrations/0001_users.sql`:
   - `USERS` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `KEYCLOAK_ID VARCHAR2(255) UNIQUE NOT NULL`, `EMAIL VARCHAR2(255) UNIQUE NOT NULL`, `NAME VARCHAR2(255) NOT NULL`, `ROLE_ID NUMBER`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`, `UPDATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`, `DELETED_AT TIMESTAMP WITH TIME ZONE NULL`
   - `ROLES` table: `ID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY`, `NAME VARCHAR2(100) UNIQUE NOT NULL`, `PERMISSIONS CLOB CHECK (PERMISSIONS IS JSON)`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`
