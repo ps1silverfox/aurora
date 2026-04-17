@@ -36,7 +36,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 0: Project Scaffolding & Infrastructure
 
-### [ ] TS-0.1 — NestJS project init
+### [x] TS-0.1 — NestJS project init
 - `npm i -g @nestjs/cli && nest new aurora-cms-ts --strict`
 - Configure `tsconfig.json`: `strict: true`, `target: ES2022`, `experimentalDecorators: true`
 - Configure `tsconfig.build.json`: excludes `test/`, `**/*.spec.ts`
@@ -44,7 +44,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Add `nest-cli.json` with `compilerOptions.deleteOutDir: true`
 - Files: `package.json`, `tsconfig.json`, `tsconfig.build.json`, `nest-cli.json`
 
-### [ ] TS-0.2 — Database abstraction layer (Oracle + CSV backends)
+### [x] TS-0.2 — Database abstraction layer (Oracle + CSV backends)
 - Create `src/db/db.interface.ts` — `DbService` interface: `query<T>(sql, binds?): Promise<T[]>`, `execute(sql, binds?): Promise<void>`, `executeBatch(sql, binds[]): Promise<void>`
 - Create `src/db/oracle.driver.ts` — Oracle 19c implementation using `oracledb` (Apache 2.0) connection pool. Only loaded when `DB_DRIVER=oracle`. Install `oracledb` but do NOT call `initOracleClient()` in this file — leave a clear `// TODO: set initOracleClient path` comment.
 - Create `src/db/csv.driver.ts` — CSV implementation: on init, reads all `test/fixtures/csv/*.csv` files into memory as `Map<tableName, Row[]>`. Implements `query<T>()` by filtering in-memory rows using simple column-match parsing of the SQL WHERE clause (best-effort; sufficient for test assertions). `execute()` and `executeBatch()` mutate the in-memory maps.
@@ -56,7 +56,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Verify: `npm run typecheck && npm test -- --testPathPattern=db`
 - Files: `src/db/db.interface.ts`, `src/db/oracle.driver.ts`, `src/db/csv.driver.ts`, `src/db/db.module.ts`, `src/db/migrate.ts`, `oracle/migrations/0000_schema_migrations.sql`, `test/fixtures/csv/.gitkeep`
 
-### [ ] TS-0.3 — Docker Compose environment
+### [x] TS-0.3 — Docker Compose environment
 - Create `docker-compose.yml` services: `app` (NestJS), `oracle` (gvenzl/oracle-xe:21-slim or oracle/database:19.3.0-ee), `keycloak`, `valkey`
 - **NOTE:** OpenSearch and NATS removed — replaced by Oracle Text and Oracle AQ
 - Create `Dockerfile` (Node 20 Alpine, multi-stage: build → production)
