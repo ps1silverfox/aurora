@@ -252,7 +252,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 4: Block Editor (Frontend)
 
-### [ ] TS-4.1 — Lexical editor integration
+### [x] TS-4.1 — Lexical editor integration
 - Install `lexical` and `@lexical/react` (MIT)
 - Create `frontend/src/editor/AuroraEditor.tsx` — editor shell with toolbar and block canvas
 - Implement core block nodes: `TextNode`, `HeadingNode`, `QuoteNode`, `ListNode`, `CodeNode`, `DividerNode`
