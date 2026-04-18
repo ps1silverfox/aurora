@@ -11,6 +11,7 @@ import { SearchModule } from './search/search.module';
 import { EventsModule } from './events/events.module';
 import { ThemesModule } from './themes/themes.module';
 import { DataVizModule } from './data-viz/data-viz.module';
+import { PluginsModule } from './plugins/plugins.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DataVizModule } from './data-viz/data-viz.module';
     SearchModule,
     ThemesModule,
     DataVizModule,
+    PluginsModule,
   ],
   controllers: [],
   providers: [],
