@@ -7,18 +7,11 @@ import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import {
-  $createParagraphNode,
   $getRoot,
-  $getSelection,
-  $isRangeSelection,
-  FORMAT_TEXT_COMMAND,
   type EditorState,
 } from 'lexical';
-import { $setBlocksType } from '@lexical/selection';
-import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
-import { $createListNode } from '@lexical/list';
-import { $createCodeNode } from '@lexical/code';
 import {
   DndContext,
   PointerSensor,
@@ -35,110 +28,19 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 import { ALL_EDITOR_NODES } from './nodes';
-import { $createDividerNode } from './nodes/DividerNode';
 import { serializeToBlocks, deserializeFromBlocks, type Block } from './serializer';
+import { Toolbar } from './Toolbar';
+import { BlockSettingsSidebar } from './BlockSettingsSidebar';
+import { KeyboardShortcutsPlugin } from './plugins/KeyboardShortcutsPlugin';
+import { AutosavePlugin } from './plugins/AutosavePlugin';
+import { InlineToolbarPlugin } from './plugins/InlineToolbarPlugin';
 
 export interface AuroraEditorProps {
   initialBlocks?: Block[];
+  pageId?: string;
   onChange?: (blocks: Block[]) => void;
+  onSave?: (blocks: Block[]) => Promise<void>;
   placeholder?: string;
-}
-
-// ─── Toolbar ─────────────────────────────────────────────────────────────────
-
-function ToolbarPlugin() {
-  const [editor] = useLexicalComposerContext();
-
-  const formatBold = useCallback(() => {
-    editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
-  }, [editor]);
-
-  const formatItalic = useCallback(() => {
-    editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
-  }, [editor]);
-
-  const setHeading = useCallback(
-    (level: 1 | 2 | 3) => {
-      editor.update(() => {
-        const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          $setBlocksType(selection, () => $createHeadingNode(`h${level}`));
-        }
-      });
-    },
-    [editor],
-  );
-
-  const setParagraph = useCallback(() => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        $setBlocksType(selection, () => $createParagraphNode());
-      }
-    });
-  }, [editor]);
-
-  const setQuote = useCallback(() => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        $setBlocksType(selection, () => $createQuoteNode());
-      }
-    });
-  }, [editor]);
-
-  const setList = useCallback(
-    (ordered: boolean) => {
-      editor.update(() => {
-        const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          $setBlocksType(selection, () => $createListNode(ordered ? 'number' : 'bullet'));
-        }
-      });
-    },
-    [editor],
-  );
-
-  const setCode = useCallback(() => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        $setBlocksType(selection, () => $createCodeNode());
-      }
-    });
-  }, [editor]);
-
-  const insertDivider = useCallback(() => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        const divider = $createDividerNode();
-        selection.insertNodes([divider]);
-      }
-    });
-  }, [editor]);
-
-  return (
-    <div className="aurora-editor__toolbar">
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); formatBold(); }} title="Bold (Ctrl+B)">
-        <strong>B</strong>
-      </button>
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); formatItalic(); }} title="Italic (Ctrl+I)">
-        <em>I</em>
-      </button>
-      <span className="aurora-editor__toolbar-sep" />
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); setParagraph(); }} title="Paragraph">P</button>
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); setHeading(1); }} title="Heading 1">H1</button>
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); setHeading(2); }} title="Heading 2">H2</button>
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); setHeading(3); }} title="Heading 3">H3</button>
-      <span className="aurora-editor__toolbar-sep" />
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); setQuote(); }} title="Quote">❝</button>
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); setList(false); }} title="Bullet list">• —</button>
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); setList(true); }} title="Numbered list">1.</button>
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); setCode(); }} title="Code block">{`</>`}</button>
-      <button className="aurora-editor__toolbar-btn" onMouseDown={(e) => { e.preventDefault(); insertDivider(); }} title="Divider">—</button>
-    </div>
-  );
 }
 
 // ─── Block drag handle (sortable) ─────────────────────────────────────────────
@@ -192,7 +94,6 @@ function BlockReorderPlugin({ containerRef }: BlockReorderPluginProps) {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
 
-  // Sync block keys from editor state
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
@@ -201,7 +102,6 @@ function BlockReorderPlugin({ containerRef }: BlockReorderPluginProps) {
     });
   }, [editor]);
 
-  // Recalculate handle positions when block keys change
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -234,7 +134,6 @@ function BlockReorderPlugin({ containerRef }: BlockReorderPluginProps) {
         const children = root.getChildren();
         const nodeByKey = new Map(children.map((n) => [n.getKey(), n]));
 
-        // Detach all children then re-append in new order
         for (const child of [...children]) child.remove();
         for (const key of newOrder) {
           const node = nodeByKey.get(key);
@@ -273,8 +172,15 @@ function InitialStatePlugin({ blocks }: { blocks: Block[] }) {
 
 // ─── AuroraEditor ─────────────────────────────────────────────────────────────
 
-export function AuroraEditor({ initialBlocks = [], onChange, placeholder = 'Start writing…' }: AuroraEditorProps) {
+export function AuroraEditor({
+  initialBlocks = [],
+  pageId,
+  onChange,
+  onSave,
+  placeholder = 'Start writing…',
+}: AuroraEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const initialConfig = {
     namespace: 'AuroraEditor',
@@ -294,25 +200,39 @@ export function AuroraEditor({ initialBlocks = [], onChange, placeholder = 'Star
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="aurora-editor">
-        <ToolbarPlugin />
-        <div
-          ref={containerRef}
-          className="aurora-editor__canvas"
-          style={{ position: 'relative', paddingLeft: 28 }}
-        >
-          <BlockReorderPlugin containerRef={containerRef} />
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable className="aurora-editor__content" aria-label="Editor content" />
-            }
-            placeholder={
-              <div className="aurora-editor__placeholder">{placeholder}</div>
-            }
-            ErrorBoundary={LexicalErrorBoundary}
+        <Toolbar
+          onPreview={pageId ? () => setPreviewOpen((v) => !v) : undefined}
+          previewOpen={previewOpen}
+        />
+        <div className="aurora-editor__body">
+          <div
+            ref={containerRef}
+            className="aurora-editor__canvas"
+            style={{ position: 'relative', paddingLeft: 28 }}
+          >
+            <BlockReorderPlugin containerRef={containerRef} />
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable className="aurora-editor__content" aria-label="Editor content" />
+              }
+              placeholder={
+                <div className="aurora-editor__placeholder">{placeholder}</div>
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+          </div>
+          <BlockSettingsSidebar
+            pageId={pageId}
+            showPreview={previewOpen}
+            onPreviewClose={() => setPreviewOpen(false)}
           />
         </div>
         <HistoryPlugin />
         <ListPlugin />
+        <LinkPlugin />
+        <InlineToolbarPlugin />
+        {onSave && <KeyboardShortcutsPlugin onSave={() => { void onSave([]); }} />}
+        {onSave && <AutosavePlugin onSave={onSave} />}
         {onChange && <OnChangePlugin onChange={handleChange} />}
         {initialBlocks.length > 0 && <InitialStatePlugin blocks={initialBlocks} />}
       </div>

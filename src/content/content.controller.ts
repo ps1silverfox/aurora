@@ -8,6 +8,7 @@ import {
   Body,
   Query,
   HttpCode,
+  Header,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -162,6 +163,16 @@ export class ContentController {
     const revision = await this.contentService.getRevision(id, revId);
     if (revision == null) throw new NotFoundError(`Revision ${revId} not found`);
     return revision;
+  }
+
+  @Get(':id/preview')
+  @Roles('content.pages.read')
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  async previewPage(@Param('id') id: string): Promise<string> {
+    const page = await this.contentService.getPage(id);
+    if (page == null) throw new NotFoundError(`Page ${id} not found`);
+    const title = page.title.replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c] ?? c));
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Preview: ${title}</title></head><body><h1>${title}</h1><p>Status: ${page.status}</p><p>Slug: ${page.slug}</p></body></html>`;
   }
 
   @Post(':id/revisions/:revId/restore')
