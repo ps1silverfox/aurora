@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AuditModule } from './audit/audit.module';
 import { ContentModule } from './content/content.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ContentModule } from './content/content.module';
     UsersModule,
     AuditModule,
     ContentModule,
+    MediaModule,
   ],
   controllers: [],
   providers: [],

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { DbModule } from '../db/db.module';
 import { AuditModule } from '../audit/audit.module';
 import { MediaService } from './media.service';
+import { MediaController } from './media.controller';
 import { VariantService } from './variant.service';
 import { VariantJob } from './variant.job';
 import { LocalStorageDriver } from './storage/local.driver';
@@ -10,6 +11,7 @@ import { STORAGE_DRIVER } from './storage/storage.interface';
 
 @Module({
   imports: [DbModule, AuditModule],
+  controllers: [MediaController],
   providers: [
     MediaService,
     VariantService,

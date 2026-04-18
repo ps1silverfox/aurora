@@ -230,14 +230,14 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests (mock storage driver)
 - Files: `oracle/migrations/0005_media.sql`, `src/media/storage/storage.interface.ts`, `src/media/storage/local.driver.ts`, `src/media/storage/s3.driver.ts`, `src/media/media.service.ts`
 
-### [ ] TS-3.2 — Image variant generation
+### [x] TS-3.2 — Image variant generation
 - Install `sharp` (Apache 2.0) for image processing
 - Create `src/media/variant.service.ts`: `generateVariants(mediaId, sourcePath)` — generates thumbnail (150px), small (300px), medium (768px), large (1200px), stores each via storage driver, inserts `MEDIA_VARIANTS` rows
 - Create `src/media/variant.job.ts` — async job triggered on image upload (called via Oracle AQ consumer in Phase 6, or direct async call in Phase 3)
 - Write unit tests for variant generation (mock sharp and storage driver)
 - Files: `src/media/variant.service.ts`, `src/media/variant.job.ts`
 
-### [ ] TS-3.3 — Media API and frontend component
+### [x] TS-3.3 — Media API and frontend component
 - Create `src/media/media.controller.ts`:
   - `POST /api/v1/media` — multipart upload
   - `GET /api/v1/media` — list (cursor-paginated, filterable by mime_type, search by filename)
