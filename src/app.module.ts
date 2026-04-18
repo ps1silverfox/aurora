@@ -9,6 +9,7 @@ import { ContentModule } from './content/content.module';
 import { MediaModule } from './media/media.module';
 import { SearchModule } from './search/search.module';
 import { EventsModule } from './events/events.module';
+import { ThemesModule } from './themes/themes.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { EventsModule } from './events/events.module';
     ContentModule,
     MediaModule,
     SearchModule,
+    ThemesModule,
   ],
   controllers: [],
   providers: [],

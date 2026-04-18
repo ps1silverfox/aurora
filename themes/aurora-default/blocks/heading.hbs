@@ -1,0 +1,6 @@
+<div class="block block-heading">
+  {{#if (eq block.content.level 1)}}<h1 style="font-size:2rem;font-weight:700;color:#111;">{{block.content.text}}</h1>{{/if}}
+  {{#if (eq block.content.level 2)}}<h2 style="font-size:1.5rem;font-weight:600;color:#111;">{{block.content.text}}</h2>{{/if}}
+  {{#if (eq block.content.level 3)}}<h3 style="font-size:1.25rem;font-weight:600;color:#374151;">{{block.content.text}}</h3>{{/if}}
+  {{#unless block.content.level}}<h2 style="font-size:1.5rem;font-weight:600;color:#111;">{{block.content.text}}</h2>{{/unless}}
+</div>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{page.title}} — Aurora CMS</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; color: #1a1a1a; line-height: 1.6; background: #fff; }
+    .page-container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+    .page-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb; }
+    .page-title { font-size: 2rem; font-weight: 700; color: #111; }
+    .page-meta { font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; }
+    .page-blocks { display: flex; flex-direction: column; gap: 1.5rem; }
+  </style>
+</head>
+<body>
+  <main class="page-container">
+    <header class="page-header">
+      <h1 class="page-title">{{page.title}}</h1>
+      {{#if page.publishedAt}}
+        <p class="page-meta">Published {{page.publishedAt}}</p>
+      {{/if}}
+    </header>
+    <div class="page-blocks">
+      {{#each blocks}}
+        {{> (blockPartial this.blockType) block=this}}
+      {{/each}}
+    </div>
+  </main>
+</body>
+</html>
