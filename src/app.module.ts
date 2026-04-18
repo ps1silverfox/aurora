@@ -10,6 +10,7 @@ import { MediaModule } from './media/media.module';
 import { SearchModule } from './search/search.module';
 import { EventsModule } from './events/events.module';
 import { ThemesModule } from './themes/themes.module';
+import { DataVizModule } from './data-viz/data-viz.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ThemesModule } from './themes/themes.module';
     MediaModule,
     SearchModule,
     ThemesModule,
+    DataVizModule,
   ],
   controllers: [],
   providers: [],

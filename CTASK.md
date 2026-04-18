@@ -372,7 +372,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 8: Data Visualization
 
-### [ ] TS-8.1 — Data sources migration and service
+### [x] TS-8.1 — Data sources migration and service
 - Create `oracle/migrations/0010_data_viz.sql`:
   - `DATA_SOURCES` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `NAME VARCHAR2(255)`, `SOURCE_TYPE VARCHAR2(20) CHECK (SOURCE_TYPE IN ('oracle','postgresql','rest_api','csv'))`, `CONNECTION_CONFIG CLOB CHECK (CONNECTION_CONFIG IS JSON)` (encrypted at app layer using `node:crypto` AES-256-GCM), `CREATED_BY RAW(16)`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`
   - `DATA_QUERIES` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `SOURCE_ID RAW(16) REFERENCES DATA_SOURCES(ID)`, `QUERY_CONFIG CLOB CHECK (QUERY_CONFIG IS JSON)`, `CACHE_TTL NUMBER DEFAULT 300`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`
