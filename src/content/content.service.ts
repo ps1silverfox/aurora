@@ -3,6 +3,7 @@ import { ContentRepository, CreatePageData, BlockInput, PageFilters } from './co
 import { AuditService } from '../audit/audit.service';
 import { EVENT_PUBLISHER, IEventPublisher } from '../events/event-publisher.interface';
 import { Page } from './entities/page.entity';
+import { Revision } from './entities/revision.entity';
 import { CursorPage } from '../common/pagination';
 
 export interface CreatePageDto {
@@ -125,5 +126,39 @@ export class ContentService {
     limit: number,
   ): Promise<CursorPage<Page>> {
     return this.repo.listPages(filters, cursor, limit);
+  }
+
+  async listRevisions(
+    pageId: string,
+    cursor: string | null,
+    limit: number,
+  ): Promise<CursorPage<Revision>> {
+    return this.repo.listRevisions(pageId, cursor, limit);
+  }
+
+  async getRevision(pageId: string, revisionId: string): Promise<Revision | null> {
+    return this.repo.findRevision(pageId, revisionId);
+  }
+
+  async restoreRevision(
+    pageId: string,
+    revisionId: string,
+    actorId: string | null,
+  ): Promise<Page | null> {
+    const page = await this.repo.findById(pageId);
+    if (page == null) return null;
+
+    const restored = await this.repo.restoreRevision(pageId, revisionId);
+    if (restored == null) return null;
+
+    await this.audit.log({
+      actorId,
+      action: 'content.restore',
+      entityType: 'page',
+      entityId: pageId,
+      diff: { revisionId },
+    });
+    this.events.publish('content.restored', { pageId, revisionId });
+    return restored;
   }
 }
