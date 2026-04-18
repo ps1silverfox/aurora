@@ -395,7 +395,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests (`// @csv-mode`): all source drivers mocked. Oracle driver test asserts `DbService.query()` called with `SELECT` keyword + `ROW_NUMBER()`. CSV driver test asserts `papaparse` invoked and returns rows. Valkey cache test asserts second identical call returns `meta.cached = true`.
 - Files: `src/data-viz/query-engine.service.ts`, `src/data-viz/drivers/`
 
-### [ ] TS-8.3 — Oracle materialized view for analytics
+### [x] TS-8.3 — Oracle materialized view for analytics
 - **Oracle-native improvement:** Create `oracle/migrations/0011_analytics_mv.sql`
   - `CONTENT_ANALYTICS_MV` materialized view DDL — build file only, do NOT execute
   - `SIGNAL_PERFORMANCE_MV` (stub DDL) — ready for Apex integration
