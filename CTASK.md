@@ -359,7 +359,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests for renderer (mock theme files)
 - Files: `oracle/migrations/0009_themes.sql`, `src/themes/theme.service.ts`, `src/themes/renderer.service.ts`, `themes/aurora-default/`
 
-### [ ] TS-7.2 — Theme API and SSR routes
+### [x] TS-7.2 — Theme API and SSR routes
 - `GET /api/v1/themes` — list themes
 - `PUT /api/v1/themes/:id/activate` — activate theme (non-destructive)
 - `GET/PUT /api/v1/themes/:id/settings`

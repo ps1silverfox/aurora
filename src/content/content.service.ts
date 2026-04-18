@@ -3,6 +3,7 @@ import { ContentRepository, CreatePageData, BlockInput, PageFilters } from './co
 import { AuditService } from '../audit/audit.service';
 import { EVENT_PUBLISHER, IEventPublisher } from '../events/event-publisher.interface';
 import { Page } from './entities/page.entity';
+import { Block } from './entities/block.entity';
 import { Revision } from './entities/revision.entity';
 import { CursorPage } from '../common/pagination';
 
@@ -118,6 +119,10 @@ export class ContentService {
 
   async getPageBySlug(slug: string): Promise<Page | null> {
     return this.repo.findBySlug(slug);
+  }
+
+  async getBlocksByPageId(pageId: string): Promise<Block[]> {
+    return this.repo.findBlocksByPageId(pageId);
   }
 
   async listPages(
