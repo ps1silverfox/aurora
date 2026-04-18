@@ -157,7 +157,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 2: Content Management (Core)
 
-### [ ] TS-2.1 — Pages migration and repository
+### [x] TS-2.1 — Pages migration and repository
 - Create `oracle/migrations/0003_content.sql`:
   - `PAGES` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `TITLE VARCHAR2(500) NOT NULL`, `SLUG VARCHAR2(500) UNIQUE NOT NULL`, `STATUS VARCHAR2(20) DEFAULT 'draft' CHECK (STATUS IN ('draft','review','approved','published','archived'))`, `AUTHOR_ID RAW(16) REFERENCES USERS(ID)`, `PUBLISHED_AT TIMESTAMP WITH TIME ZONE`, `SCHEDULED_AT TIMESTAMP WITH TIME ZONE`, `VIEW_COUNT NUMBER DEFAULT 0`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`, `UPDATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`, `DELETED_AT TIMESTAMP WITH TIME ZONE NULL`
   - Index: `IDX_PAGES_SLUG` on `SLUG`, `IDX_PAGES_STATUS` on `STATUS`, `IDX_PAGES_AUTHOR` on `AUTHOR_ID`
@@ -168,7 +168,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests for repository
 - Files: `oracle/migrations/0003_content.sql`, `src/content/entities/page.entity.ts`, `src/content/entities/block.entity.ts`, `src/content/content.repository.ts`
 
-### [ ] TS-2.2 — Block type validation
+### [x] TS-2.2 — Block type validation
 - Create `src/content/blocks/block-registry.ts` — registry mapping block type string → Zod schema for `content` JSON
 - Define schemas for: `text`, `heading`, `image`, `video`, `quote`, `list`, `table`, `code`, `separator`, `columns`, `section`, `tabs`, `accordion`, `chart`, `kpi_card`, `data_table`, `embed_youtube`, `embed_vimeo`, `embed_iframe`, `reusable`
 - `validateBlock(type, content)` — returns `Result<void, ValidationError>`
@@ -176,7 +176,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests: valid content passes, invalid content returns error, unknown type returns error
 - Files: `src/content/blocks/block-registry.ts`, `src/content/blocks/schemas/*.ts`
 
-### [ ] TS-2.3 — Revisions
+### [x] TS-2.3 — Revisions
 - Create `oracle/migrations/0004_revisions.sql`:
   - `REVISIONS` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `PAGE_ID RAW(16) REFERENCES PAGES(ID) ON DELETE CASCADE`, `TITLE VARCHAR2(500)`, `BLOCKS CLOB CHECK (BLOCKS IS JSON)`, `CREATED_BY RAW(16) REFERENCES USERS(ID)`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`
   - Index: `IDX_REVISIONS_PAGE` on `PAGE_ID, CREATED_AT DESC`
@@ -184,7 +184,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Auto-create revision in `ContentService.updatePage()` — call before applying the update
 - Files: `oracle/migrations/0004_revisions.sql` (append to existing migration or new file)
 
-### [ ] TS-2.4 — Content service and workflow
+### [x] TS-2.4 — Content service and workflow
 - Create `src/content/content.service.ts`:
   - `createPage(dto, actor)` — validates, slugifies, inserts, emits `content.created` event, logs to audit
   - `updatePage(id, dto, actor)` — validates, creates revision, updates, emits `content.updated`, audits
@@ -199,7 +199,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests for all transitions (valid and invalid), scheduler logic
 - Files: `src/content/content.service.ts`, `src/content/workflow.service.ts`, `src/content/scheduler.service.ts`
 
-### [ ] TS-2.5 — Content API endpoints
+### [x] TS-2.5 — Content API endpoints
 - Create `src/content/content.controller.ts`:
   - `POST /api/v1/pages` — create
   - `GET /api/v1/pages` — list (filterable: status, author, tag, category)
@@ -219,7 +219,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 3: Media Management
 
-### [ ] TS-3.1 — Media migration and upload service
+### [x] TS-3.1 — Media migration and upload service
 - Create `oracle/migrations/0005_media.sql`:
   - `MEDIA` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `FILENAME VARCHAR2(500) NOT NULL`, `MIME_TYPE VARCHAR2(100)`, `SIZE_BYTES NUMBER`, `STORAGE_DRIVER VARCHAR2(20) DEFAULT 'local'`, `STORAGE_PATH VARCHAR2(1000) NOT NULL`, `UPLOADED_BY RAW(16) REFERENCES USERS(ID)`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`, `DELETED_AT TIMESTAMP WITH TIME ZONE NULL`
   - `MEDIA_VARIANTS` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `MEDIA_ID RAW(16) REFERENCES MEDIA(ID) ON DELETE CASCADE`, `VARIANT VARCHAR2(20) CHECK (VARIANT IN ('thumbnail','small','medium','large'))`, `STORAGE_PATH VARCHAR2(1000)`, `WIDTH NUMBER`, `HEIGHT NUMBER`
