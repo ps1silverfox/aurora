@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { DbModule } from '../db/db.module';
 import { AuditModule } from '../audit/audit.module';
 import { MediaService } from './media.service';
+import { VariantService } from './variant.service';
+import { VariantJob } from './variant.job';
 import { LocalStorageDriver } from './storage/local.driver';
 import { S3StorageDriver } from './storage/s3.driver';
 import { STORAGE_DRIVER } from './storage/storage.interface';
@@ -10,6 +12,8 @@ import { STORAGE_DRIVER } from './storage/storage.interface';
   imports: [DbModule, AuditModule],
   providers: [
     MediaService,
+    VariantService,
+    VariantJob,
     {
       provide: STORAGE_DRIVER,
       useFactory: () => {
@@ -18,6 +22,6 @@ import { STORAGE_DRIVER } from './storage/storage.interface';
       },
     },
   ],
-  exports: [MediaService],
+  exports: [MediaService, VariantService, VariantJob],
 })
 export class MediaModule {}

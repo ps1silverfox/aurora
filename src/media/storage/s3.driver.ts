@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { StorageDriver, UploadedFile } from './storage.interface';
 
 @Injectable()
@@ -40,5 +40,16 @@ export class S3StorageDriver implements StorageDriver {
 
   url(storagePath: string): string {
     return `${this.baseUrl}/${storagePath}`;
+  }
+
+  async read(storagePath: string): Promise<Buffer> {
+    const response = await this.client.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: storagePath }),
+    );
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
   }
 }

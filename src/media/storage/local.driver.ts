@@ -22,4 +22,9 @@ export class LocalStorageDriver implements StorageDriver {
   url(storagePath: string): string {
     return `/media/${storagePath}`;
   }
+
+  async read(storagePath: string): Promise<Buffer> {
+    const dest = path.join(STORAGE_ROOT, storagePath);
+    return fs.readFile(dest);
+  }
 }

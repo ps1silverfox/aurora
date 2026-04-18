@@ -11,4 +11,5 @@ export interface StorageDriver {
   upload(file: UploadedFile, path: string): Promise<string>;
   delete(path: string): Promise<void>;
   url(path: string): string;
+  read(path: string): Promise<Buffer>;
 }
