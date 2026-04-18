@@ -348,7 +348,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 7: Themes (SSR)
 
-### [ ] TS-7.1 — Theme engine
+### [x] TS-7.1 — Theme engine
 - Create `oracle/migrations/0009_themes.sql`:
   - `THEMES` table: `ID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY`, `NAME VARCHAR2(255)`, `SLUG VARCHAR2(100) UNIQUE`, `PATH VARCHAR2(1000)`, `IS_ACTIVE NUMBER(1) DEFAULT 0`, `SETTINGS CLOB CHECK (SETTINGS IS JSON)`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`
 - Theme templates: Handlebars (MIT) files in `themes/{slug}/templates/`
