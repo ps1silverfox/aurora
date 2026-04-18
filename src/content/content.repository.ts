@@ -3,6 +3,7 @@ import { DB_SERVICE, IDbService } from '../db/db.interface';
 import { encodeCursor, decodeCursor, CursorPage } from '../common/pagination';
 import { Page, PageStatus } from './entities/page.entity';
 import { Block } from './entities/block.entity';
+import { Revision } from './entities/revision.entity';
 
 function rawToUuid(hex: string): string {
   const h = hex.replace(/-/g, '').toLowerCase();
@@ -27,6 +28,15 @@ interface PageRow {
   DELETED_AT: Date | null;
 }
 
+interface RevisionRow {
+  ID: string;
+  PAGE_ID: string;
+  TITLE: string;
+  BLOCKS: string | null;
+  CREATED_BY: string | null;
+  CREATED_AT: Date;
+}
+
 interface BlockRow {
   ID: string;
   PAGE_ID: string;
@@ -49,6 +59,17 @@ function mapPage(row: PageRow): Page {
     createdAt: row.CREATED_AT,
     updatedAt: row.UPDATED_AT,
     deletedAt: row.DELETED_AT ?? null,
+  };
+}
+
+function mapRevision(row: RevisionRow): Revision {
+  return {
+    id: rawToUuid(row.ID),
+    pageId: rawToUuid(row.PAGE_ID),
+    title: row.TITLE,
+    blocks: row.BLOCKS != null ? (JSON.parse(row.BLOCKS) as BlockInput[]) : [],
+    createdBy: row.CREATED_BY != null ? rawToUuid(row.CREATED_BY) : null,
+    createdAt: row.CREATED_AT,
   };
 }
 
@@ -79,6 +100,13 @@ export interface BlockInput {
   blockType: string;
   blockOrder: number;
   content: Record<string, unknown>;
+}
+
+export interface CreateRevisionData {
+  pageId: string;
+  title: string;
+  blocks: BlockInput[];
+  createdBy?: string | null;
 }
 
 @Injectable()
@@ -215,6 +243,87 @@ export class ContentRepository {
         content: JSON.stringify(b.content),
       })),
     );
+  }
+
+  async createRevision(data: CreateRevisionData): Promise<Revision> {
+    await this.db.execute(
+      `INSERT INTO REVISIONS (PAGE_ID, TITLE, BLOCKS, CREATED_BY)
+       VALUES (HEXTORAW(:pageId), :title, :blocks, HEXTORAW(:createdBy))`,
+      {
+        pageId: uuidToRaw(data.pageId),
+        title: data.title,
+        blocks: JSON.stringify(data.blocks),
+        createdBy: data.createdBy != null ? uuidToRaw(data.createdBy) : null,
+      },
+    );
+    const rows = await this.db.query<RevisionRow>(
+      `SELECT ID, PAGE_ID, TITLE, BLOCKS, CREATED_BY, CREATED_AT
+       FROM REVISIONS
+       WHERE PAGE_ID = HEXTORAW(:pageId) AND TITLE = :title
+       ORDER BY CREATED_AT DESC
+       FETCH FIRST 1 ROWS ONLY`,
+      { pageId: uuidToRaw(data.pageId), title: data.title },
+    );
+    const row = rows[0];
+    if (row == null) throw new Error('Revision insert failed');
+    return mapRevision(row);
+  }
+
+  async listRevisions(
+    pageId: string,
+    cursor: string | null,
+    limit: number,
+  ): Promise<CursorPage<Revision>> {
+    const pageSize = Math.min(limit, 100);
+    const binds: Record<string, unknown> = {
+      pageId: uuidToRaw(pageId),
+      pageSize: pageSize + 1,
+    };
+    const conditions: string[] = ['PAGE_ID = HEXTORAW(:pageId)'];
+
+    if (cursor) {
+      const decoded = decodeCursor(cursor);
+      if (decoded != null && decoded['id'] != null) {
+        conditions.push('RAWTOHEX(ID) < :beforeId');
+        binds['beforeId'] = (decoded['id'] as string).toUpperCase();
+      }
+    }
+
+    const rows = await this.db.query<RevisionRow>(
+      `SELECT ID, PAGE_ID, TITLE, BLOCKS, CREATED_BY, CREATED_AT
+       FROM REVISIONS
+       WHERE ${conditions.join(' AND ')}
+       ORDER BY CREATED_AT DESC, ID DESC
+       FETCH FIRST :pageSize ROWS ONLY`,
+      binds,
+    );
+
+    const hasNext = rows.length > pageSize;
+    const data = rows.slice(0, pageSize).map(mapRevision);
+    const last = data[data.length - 1];
+    const nextCursor =
+      hasNext && last != null ? encodeCursor({ id: uuidToRaw(last.id) }) : null;
+
+    return { data, nextCursor, prevCursor: null };
+  }
+
+  async findRevision(pageId: string, revisionId: string): Promise<Revision | null> {
+    const rows = await this.db.query<RevisionRow>(
+      `SELECT ID, PAGE_ID, TITLE, BLOCKS, CREATED_BY, CREATED_AT
+       FROM REVISIONS
+       WHERE ID = HEXTORAW(:id) AND PAGE_ID = HEXTORAW(:pageId)`,
+      { id: uuidToRaw(revisionId), pageId: uuidToRaw(pageId) },
+    );
+    const row = rows[0];
+    return row != null ? mapRevision(row) : null;
+  }
+
+  async restoreRevision(pageId: string, revisionId: string): Promise<Page | null> {
+    const revision = await this.findRevision(pageId, revisionId);
+    if (revision == null) return null;
+    await this.updatePage(pageId, { title: revision.title });
+    await this.upsertBlocks(pageId, revision.blocks);
+    return this.findById(pageId);
   }
 
   async findBlocksByPageId(pageId: string): Promise<Block[]> {

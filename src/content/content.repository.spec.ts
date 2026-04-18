@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { ContentRepository } from './content.repository';
+import { ContentRepository, CreateRevisionData } from './content.repository';
 import { DB_SERVICE } from '../db/db.interface';
 
 const mockDb = {
@@ -12,6 +12,8 @@ const RAW_ID = 'AABBCCDD11223344AABBCCDD11223344';
 const UUID_ID = 'aabbccdd-1122-3344-aabb-ccdd11223344';
 const AUTHOR_RAW = 'BBCCDDEE22334455BBCCDDEE22334455';
 const AUTHOR_UUID = 'bbccddee-2233-4455-bbcc-ddee22334455';
+const REV_RAW = 'CCDDEE1122334455CCDDEE1122334455';
+const REV_UUID = 'ccddee11-2233-4455-ccdd-ee1122334455';
 
 const pageRow = {
   ID: RAW_ID,
@@ -25,6 +27,15 @@ const pageRow = {
   CREATED_AT: new Date('2024-01-01T00:00:00Z'),
   UPDATED_AT: new Date('2024-01-01T00:00:00Z'),
   DELETED_AT: null,
+};
+
+const revisionRow = {
+  ID: REV_RAW,
+  PAGE_ID: RAW_ID,
+  TITLE: 'Hello World',
+  BLOCKS: JSON.stringify([{ blockType: 'text', blockOrder: 1, content: { text: 'Hi' } }]),
+  CREATED_BY: AUTHOR_RAW,
+  CREATED_AT: new Date('2024-01-02T00:00:00Z'),
 };
 
 const blockRow = {
@@ -227,6 +238,123 @@ describe('ContentRepository', () => {
         expect.stringContaining('ORDER BY'),
         expect.objectContaining({ pageId: RAW_ID }),
       );
+    });
+  });
+
+  describe('createRevision', () => {
+    const revData: CreateRevisionData = {
+      pageId: UUID_ID,
+      title: 'Hello World',
+      blocks: [{ blockType: 'text', blockOrder: 1, content: { text: 'Hi' } }],
+      createdBy: AUTHOR_UUID,
+    };
+
+    it('inserts revision and returns mapped entity', async () => {
+      mockDb.execute.mockResolvedValueOnce(undefined);
+      mockDb.query.mockResolvedValueOnce([revisionRow]);
+      const rev = await repo.createRevision(revData);
+      expect(mockDb.execute).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO REVISIONS'),
+        expect.objectContaining({ pageId: RAW_ID, title: 'Hello World' }),
+      );
+      expect(rev.id).toBe(REV_UUID);
+      expect(rev.pageId).toBe(UUID_ID);
+      expect(rev.createdBy).toBe(AUTHOR_UUID);
+      expect(rev.blocks).toHaveLength(1);
+    });
+
+    it('stores blocks as JSON string', async () => {
+      mockDb.execute.mockResolvedValueOnce(undefined);
+      mockDb.query.mockResolvedValueOnce([revisionRow]);
+      await repo.createRevision(revData);
+      const [, binds] = mockDb.execute.mock.calls[0] as [string, Record<string, unknown>];
+      expect(typeof binds['blocks']).toBe('string');
+      expect(JSON.parse(binds['blocks'] as string)).toHaveLength(1);
+    });
+
+    it('handles null createdBy', async () => {
+      mockDb.execute.mockResolvedValueOnce(undefined);
+      mockDb.query.mockResolvedValueOnce([{ ...revisionRow, CREATED_BY: null }]);
+      const rev = await repo.createRevision({ ...revData, createdBy: null });
+      const [, binds] = mockDb.execute.mock.calls[0] as [string, Record<string, unknown>];
+      expect(binds['createdBy']).toBeNull();
+      expect(rev.createdBy).toBeNull();
+    });
+  });
+
+  describe('listRevisions', () => {
+    it('returns revisions without cursor', async () => {
+      mockDb.query.mockResolvedValueOnce([revisionRow]);
+      const result = await repo.listRevisions(UUID_ID, null, 10);
+      expect(result.data).toHaveLength(1);
+      expect(result.nextCursor).toBeNull();
+      const [sql] = mockDb.query.mock.calls[0] as [string, unknown];
+      expect(sql).toContain('ORDER BY CREATED_AT DESC');
+    });
+
+    it('sets nextCursor when more rows available', async () => {
+      const rows = Array.from({ length: 11 }, () => ({ ...revisionRow }));
+      mockDb.query.mockResolvedValueOnce(rows);
+      const result = await repo.listRevisions(UUID_ID, null, 10);
+      expect(result.data).toHaveLength(10);
+      expect(result.nextCursor).not.toBeNull();
+    });
+
+    it('caps page size at 100', async () => {
+      mockDb.query.mockResolvedValueOnce([]);
+      await repo.listRevisions(UUID_ID, null, 9999);
+      const [, binds] = mockDb.query.mock.calls[0] as [string, Record<string, unknown>];
+      expect(binds['pageSize']).toBe(101);
+    });
+  });
+
+  describe('findRevision', () => {
+    it('returns mapped revision when found', async () => {
+      mockDb.query.mockResolvedValueOnce([revisionRow]);
+      const rev = await repo.findRevision(UUID_ID, REV_UUID);
+      expect(rev).not.toBeNull();
+      if (rev == null) return;
+      expect(rev.id).toBe(REV_UUID);
+      expect(mockDb.query).toHaveBeenCalledWith(
+        expect.stringContaining('REVISIONS'),
+        expect.objectContaining({ id: REV_RAW, pageId: RAW_ID }),
+      );
+    });
+
+    it('returns null when revision not found', async () => {
+      mockDb.query.mockResolvedValueOnce([]);
+      expect(await repo.findRevision(UUID_ID, REV_UUID)).toBeNull();
+    });
+  });
+
+  describe('restoreRevision', () => {
+    it('updates page title and upserts blocks from snapshot', async () => {
+      // findRevision query
+      mockDb.query.mockResolvedValueOnce([revisionRow]);
+      // updatePage execute + findById query
+      mockDb.execute.mockResolvedValueOnce(undefined);
+      mockDb.query.mockResolvedValueOnce([pageRow]);
+      // upsertBlocks: DELETE execute + executeBatch
+      mockDb.execute.mockResolvedValueOnce(undefined);
+      mockDb.executeBatch.mockResolvedValueOnce(undefined);
+      // findById after restore
+      mockDb.query.mockResolvedValueOnce([pageRow]);
+
+      const page = await repo.restoreRevision(UUID_ID, REV_UUID);
+      expect(page).not.toBeNull();
+      expect(mockDb.execute).toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE PAGES'),
+        expect.objectContaining({ title: 'Hello World' }),
+      );
+      expect(mockDb.executeBatch).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO BLOCKS'),
+        expect.arrayContaining([expect.objectContaining({ blockType: 'text' })]),
+      );
+    });
+
+    it('returns null when revision does not exist', async () => {
+      mockDb.query.mockResolvedValueOnce([]);
+      expect(await repo.restoreRevision(UUID_ID, REV_UUID)).toBeNull();
     });
   });
 });
