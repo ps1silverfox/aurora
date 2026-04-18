@@ -17,6 +17,20 @@ import {
 import { $createListNode, $createListItemNode, $isListNode, $isListItemNode } from '@lexical/list';
 import { $createCodeNode, $isCodeNode } from '@lexical/code';
 import { $createDividerNode, $isDividerNode } from './nodes/DividerNode';
+import { $createImageBlockNode, $createVideoBlockNode, $isImageBlockNode, $isVideoBlockNode } from './nodes/MediaBlocks';
+import {
+  $createColumnsBlockNode,
+  $createSectionBlockNode,
+  $createTabsBlockNode,
+  $createAccordionBlockNode,
+  $isColumnsBlockNode,
+  $isSectionBlockNode,
+  $isTabsBlockNode,
+  $isAccordionBlockNode,
+  type ColumnCount,
+  type TabItem,
+  type AccordionItem,
+} from './nodes/LayoutBlocks';
 
 export interface Block {
   type: string;
@@ -49,6 +63,30 @@ function serializeNode(node: LexicalNode): Block | null {
 
   if ($isDividerNode(node)) {
     return { type: 'separator', content: {} };
+  }
+
+  if ($isImageBlockNode(node)) {
+    return { type: 'image', content: { url: node.__src, alt: node.__alt, alignment: node.__alignment } };
+  }
+
+  if ($isVideoBlockNode(node)) {
+    return { type: 'video', content: { url: node.__src, poster: node.__poster } };
+  }
+
+  if ($isColumnsBlockNode(node)) {
+    return { type: 'columns', content: { columns: node.__columns, content: node.__content } };
+  }
+
+  if ($isSectionBlockNode(node)) {
+    return { type: 'section', content: { title: node.__title, content: node.__content } };
+  }
+
+  if ($isTabsBlockNode(node)) {
+    return { type: 'tabs', content: { tabs: node.__tabs } };
+  }
+
+  if ($isAccordionBlockNode(node)) {
+    return { type: 'accordion', content: { items: node.__items } };
   }
 
   if ($isParagraphNode(node)) {
@@ -103,6 +141,32 @@ function deserializeBlock(block: Block): LexicalNode | null {
     }
     case 'separator':
       return $createDividerNode();
+    case 'image': {
+      const { url, alt, alignment } = block.content as { url: string; alt: string; alignment: string };
+      return $createImageBlockNode(url, alt, alignment as 'left' | 'center' | 'right');
+    }
+    case 'video': {
+      const { url, poster } = block.content as { url: string; poster: string };
+      return $createVideoBlockNode(url, poster);
+    }
+    case 'columns': {
+      const { columns, content } = block.content as { columns: ColumnCount; content: string[] };
+      const colNode = $createColumnsBlockNode(columns);
+      colNode.__content = content;
+      return colNode;
+    }
+    case 'section': {
+      const { title, content } = block.content as { title: string; content: string };
+      return $createSectionBlockNode(title, content);
+    }
+    case 'tabs': {
+      const { tabs } = block.content as { tabs: TabItem[] };
+      return $createTabsBlockNode(tabs);
+    }
+    case 'accordion': {
+      const { items } = block.content as { items: AccordionItem[] };
+      return $createAccordionBlockNode(items);
+    }
     case 'text':
     default: {
       const { html } = block.content as { html: string };

@@ -261,7 +261,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Deserializer: `deserializeFromBlocks(blocks: Block[]): EditorState` — loads block JSON into Lexical
 - Files: `frontend/src/editor/AuroraEditor.tsx`, `frontend/src/editor/nodes/`, `frontend/src/editor/serializer.ts`
 
-### [ ] TS-4.2 — Media and layout blocks
+### [x] TS-4.2 — Media and layout blocks
 - Media blocks: `ImageBlockNode` (insert from MediaPicker, alt text, alignment), `VideoBlockNode`
 - Layout blocks: `ColumnsBlockNode` (2-col, 3-col, custom), `SectionBlockNode`, `TabsBlockNode`, `AccordionBlockNode`
 - Each block: custom render component + settings sidebar panel
