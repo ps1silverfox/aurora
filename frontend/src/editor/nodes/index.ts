@@ -36,6 +36,12 @@ export {
   getEmbedUrl,
   type EmbedProvider,
 } from './EmbedBlocks';
+export {
+  ReusableBlockNode,
+  $createReusableBlockNode,
+  $isReusableBlockNode,
+  type SerializedReusableBlockNode,
+} from './ReusableBlock';
 
 import type { Klass, LexicalNode } from 'lexical';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
@@ -46,6 +52,7 @@ import { ImageBlockNode, VideoBlockNode } from './MediaBlocks';
 import { ColumnsBlockNode, SectionBlockNode, TabsBlockNode, AccordionBlockNode } from './LayoutBlocks';
 import { TableBlockNode } from './TableBlock';
 import { EmbedBlockNode } from './EmbedBlocks';
+import { ReusableBlockNode } from './ReusableBlock';
 
 export const ALL_EDITOR_NODES: ReadonlyArray<Klass<LexicalNode>> = [
   HeadingNode,
@@ -63,4 +70,5 @@ export const ALL_EDITOR_NODES: ReadonlyArray<Klass<LexicalNode>> = [
   AccordionBlockNode,
   TableBlockNode,
   EmbedBlockNode,
+  ReusableBlockNode,
 ];

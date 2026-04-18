@@ -9,15 +9,18 @@ import { ContentService } from './content.service';
 import { WorkflowService } from './workflow.service';
 import { SchedulerService } from './scheduler.service';
 import { ContentController } from './content.controller';
+import { BlockTemplatesController } from './block-templates.controller';
+import { BlockTemplatesService } from './block-templates.service';
 
 @Module({
   imports: [DbModule, AuditModule, UsersModule],
-  controllers: [ContentController],
+  controllers: [ContentController, BlockTemplatesController],
   providers: [
     ContentRepository,
     ContentService,
     WorkflowService,
     SchedulerService,
+    BlockTemplatesService,
     {
       provide: EVENT_PUBLISHER,
       useFactory: (emitter: EventEmitter2) => ({

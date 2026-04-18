@@ -33,6 +33,7 @@ import {
 } from './nodes/LayoutBlocks';
 import { $isTableBlockNode, TableBlockNode } from './nodes/TableBlock';
 import { $createEmbedBlockNode, $isEmbedBlockNode } from './nodes/EmbedBlocks';
+import { $createReusableBlockNode, $isReusableBlockNode } from './nodes/ReusableBlock';
 
 export interface Block {
   type: string;
@@ -100,6 +101,19 @@ function serializeNode(node: LexicalNode): Block | null {
 
   if ($isEmbedBlockNode(node)) {
     return { type: 'embed', content: { url: node.__url, height: node.__height, caption: node.__caption } };
+  }
+
+  if ($isReusableBlockNode(node)) {
+    return {
+      type: 'reusable',
+      content: {
+        templateId: node.__templateId,
+        name: node.__name,
+        blockType: node.__blockType,
+        content: node.__content,
+        detached: node.__detached,
+      },
+    };
   }
 
   if ($isParagraphNode(node)) {
@@ -189,6 +203,12 @@ function deserializeBlock(block: Block): LexicalNode | null {
     case 'embed': {
       const { url, height, caption } = block.content as { url: string; height: number; caption: string };
       return $createEmbedBlockNode(url, height, caption);
+    }
+    case 'reusable': {
+      const { templateId, name, blockType, content, detached } = block.content as {
+        templateId: string; name: string; blockType: string; content: Record<string, unknown>; detached: boolean;
+      };
+      return $createReusableBlockNode(templateId, name, blockType, content, detached);
     }
     case 'text':
     default: {

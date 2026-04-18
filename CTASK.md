@@ -267,12 +267,12 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Each block: custom render component + settings sidebar panel
 - Files: `frontend/src/editor/nodes/MediaBlocks.tsx`, `frontend/src/editor/nodes/LayoutBlocks.tsx`
 
-### [ ] TS-4.3 — Table and embed blocks
+### [x] TS-4.3 — Table and embed blocks
 - `TableBlockNode` — add/remove rows/columns, header row, striped rows
 - `EmbedBlock` — YouTube, Vimeo, generic iframe, CodeSandbox/StackBlitz URL
 - Files: `frontend/src/editor/nodes/TableBlock.tsx`, `frontend/src/editor/nodes/EmbedBlocks.tsx`
 
-### [ ] TS-4.4 — Reusable block templates
+### [x] TS-4.4 — Reusable block templates
 - Create `oracle/migrations/0006_block_templates.sql`:
   - `BLOCK_TEMPLATES` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `NAME VARCHAR2(255) NOT NULL`, `BLOCK_TYPE VARCHAR2(50) NOT NULL`, `CONTENT CLOB CHECK (CONTENT IS JSON)`, `CREATED_BY RAW(16) REFERENCES USERS(ID)`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`
 - Backend: `GET/POST/DELETE /api/v1/block-templates`
