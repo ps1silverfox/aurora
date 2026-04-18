@@ -332,7 +332,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests for publish (`// @csv-mode`): mock `DbService`, assert `OracleAqService.publish()` calls `execute()` with a SQL string referencing `DBMS_AQ.ENQUEUE`, correct topic and payload bind vars passed.
 - Files: `oracle/migrations/0008_oracle_aq.sql`, `src/events/oracle-aq.service.ts`, `src/events/event-types.ts`, `src/events/events.module.ts`
 
-### [ ] TS-6.2 — AQ consumers
+### [x] TS-6.2 — AQ consumers
 - Create `src/events/consumers/` — one file per consumer, all implement `AqConsumer` interface
 - `content-published.consumer.ts` — dequeues `content.published` → calls `SearchService.index()`, clears Valkey page cache
 - `content-updated.consumer.ts` — dequeues `content.updated` → `SearchService.index()`, audits
