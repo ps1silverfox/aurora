@@ -403,7 +403,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests (`// @csv-mode`): mock `DbService`, assert controller returns shaped response matching fixture data
 - Files: `oracle/migrations/0011_analytics_mv.sql`, `src/data-viz/analytics.controller.ts`
 
-### [ ] TS-8.4 — Chart builder UI and data blocks
+### [x] TS-8.4 — Chart builder UI and data blocks
 - Frontend: `frontend/src/features/data-viz/ChartBuilder.tsx`
   - Visual query builder: source picker, column picker, axis/series config
   - Chart type selector: bar, line, pie, area, KPI card, data table

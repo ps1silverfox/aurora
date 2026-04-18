@@ -24,14 +24,6 @@ const STATUS_OPTIONS = [
   { value: 'archived', label: 'Archived' },
 ];
 
-function buildSearchUrl(q: string, status: string, cursor?: string): string {
-  const params = new URLSearchParams({ q });
-  if (status) params.set('status', status);
-  if (cursor) params.set('cursor', cursor);
-  params.set('limit', '20');
-  return `/search?${params.toString()}`;
-}
-
 // Naive snippet: highlights query terms in title with <mark>
 function highlightTerms(text: string, query: string): React.ReactNode[] {
   const terms = query
