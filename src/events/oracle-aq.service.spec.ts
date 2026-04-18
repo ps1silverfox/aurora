@@ -16,6 +16,7 @@ describe('OracleAqService', () => {
       query: jest.fn(),
       execute: jest.fn().mockResolvedValue(undefined),
       executeBatch: jest.fn(),
+  executeOut: jest.fn().mockResolvedValue({}),
     };
 
     const module: TestingModule = await Test.createTestingModule({

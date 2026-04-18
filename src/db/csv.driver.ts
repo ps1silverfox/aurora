@@ -120,6 +120,11 @@ export class CsvDriver implements IDbService, OnModuleInit {
     return Promise.resolve();
   }
 
+  executeOut(): Promise<Record<string, unknown>> {
+    // Oracle AQ dequeue is a no-op in CSV mode — callers treat empty result as no message
+    return Promise.resolve({});
+  }
+
   async executeBatch(
     sql: string,
     binds: (Record<string, unknown> | unknown[])[],

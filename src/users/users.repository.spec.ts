@@ -6,6 +6,7 @@ const mockDb = {
   query: jest.fn(),
   execute: jest.fn(),
   executeBatch: jest.fn(),
+  executeOut: jest.fn().mockResolvedValue({}),
 };
 
 const RAW_ID = 'AABBCCDD11223344AABBCCDD11223344';

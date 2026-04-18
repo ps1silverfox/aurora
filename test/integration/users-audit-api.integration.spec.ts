@@ -82,6 +82,7 @@ function buildMockDb(queryResult: unknown[] = []): jest.Mocked<IDbService> {
     query: jest.fn().mockResolvedValue(queryResult),
     execute: jest.fn().mockResolvedValue(undefined),
     executeBatch: jest.fn().mockResolvedValue(undefined),
+      executeOut: jest.fn().mockResolvedValue({}),
   };
 }
 
@@ -203,6 +204,7 @@ describe('UsersController (integration)', () => {
           .mockResolvedValueOnce([USER_ROW]),
         execute: jest.fn().mockResolvedValue(undefined),
         executeBatch: jest.fn().mockResolvedValue(undefined),
+      executeOut: jest.fn().mockResolvedValue({}),
       };
       app = await createApp(mockDb);
 

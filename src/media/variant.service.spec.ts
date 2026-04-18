@@ -19,7 +19,7 @@ jest.mock('sharp', () =>
 
 describe('VariantService', () => {
   let service: VariantService;
-  let mockDb: { query: jest.Mock; execute: jest.Mock; executeBatch: jest.Mock };
+  let mockDb: { query: jest.Mock; execute: jest.Mock; executeBatch: jest.Mock; executeOut: jest.Mock };
   let mockStorage: { upload: jest.Mock; delete: jest.Mock; url: jest.Mock; read: jest.Mock };
 
   beforeEach(async () => {
@@ -29,6 +29,7 @@ describe('VariantService', () => {
         .mockResolvedValue([{ ID: 'AABBCCDDAABBCCDDAABBCCDDAABBCCDD' }]),
       execute: jest.fn().mockResolvedValue(undefined),
       executeBatch: jest.fn().mockResolvedValue(undefined),
+      executeOut: jest.fn().mockResolvedValue({}),
     };
 
     mockStorage = {

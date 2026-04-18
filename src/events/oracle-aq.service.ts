@@ -14,11 +14,55 @@ const ENQUEUE_SQL = `BEGIN
   COMMIT;
 END;`;
 
+const DEQUEUE_SQL = `DECLARE
+  l_dequeue_options    DBMS_AQ.DEQUEUE_OPTIONS_T;
+  l_message_properties DBMS_AQ.MESSAGE_PROPERTIES_T;
+  l_msgid              RAW(16);
+  l_payload            AQ_EVENT_TYPE;
+BEGIN
+  l_dequeue_options.wait       := DBMS_AQ.NO_WAIT;
+  l_dequeue_options.visibility := DBMS_AQ.IMMEDIATE;
+  DBMS_AQ.DEQUEUE(
+    queue_name         => :queueName,
+    dequeue_options    => l_dequeue_options,
+    message_properties => l_message_properties,
+    payload            => l_payload,
+    msgid              => l_msgid
+  );
+  :subject := l_payload.SUBJECT;
+  :payload := l_payload.PAYLOAD;
+  COMMIT;
+END;`;
+
 @Injectable()
 export class OracleAqService implements IEventPublisher {
   private readonly logger = new Logger(OracleAqService.name);
 
   constructor(@Inject(DB_SERVICE) private readonly db: IDbService) {}
+
+  async dequeue(topic: string): Promise<{ subject: string; payload: string } | null> {
+    const queueName = TOPIC_TO_QUEUE[topic];
+    if (!queueName) {
+      this.logger.warn(`No AQ queue mapped for topic: ${topic}`);
+      return null;
+    }
+    try {
+      const out = await this.db.executeOut(DEQUEUE_SQL, {
+        queueName,
+        subject: { dir: 'out', type: 'string' },
+        payload: { dir: 'out', type: 'string' },
+      });
+      // CSV mode returns {} — treat as empty queue
+      if (!out['subject'] && !out['payload']) return null;
+      return { subject: out['subject'] as string, payload: out['payload'] as string };
+    } catch (err: unknown) {
+      // ORA-25228: no message available — normal empty-queue condition
+      const msg = (err as { message?: string }).message ?? '';
+      if (msg.includes('ORA-25228')) return null;
+      this.logger.error(`AQ dequeue failed for ${topic}`, err);
+      throw err;
+    }
+  }
 
   publish(topic: string, payload: unknown): void {
     const queueName = TOPIC_TO_QUEUE[topic];

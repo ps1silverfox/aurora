@@ -53,6 +53,23 @@ export class OracleDriver implements IDbService, OnModuleInit, OnModuleDestroy {
     }
   }
 
+  async executeOut(
+    sql: string,
+    binds: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const conn = await this.pool.getConnection();
+    try {
+      const result = await conn.execute(
+        sql,
+        binds as oracledb.BindParameters,
+        { autoCommit: false },
+      );
+      return (result.outBinds as Record<string, unknown> | undefined) ?? {};
+    } finally {
+      await conn.close();
+    }
+  }
+
   async executeBatch(
     sql: string,
     binds: (Record<string, unknown> | unknown[])[],

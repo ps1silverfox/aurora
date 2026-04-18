@@ -6,6 +6,7 @@ const mockDb: jest.Mocked<IDbService> = {
   query: jest.fn(),
   execute: jest.fn(),
   executeBatch: jest.fn(),
+  executeOut: jest.fn().mockResolvedValue({}),
 };
 
 describe('AuditService', () => {

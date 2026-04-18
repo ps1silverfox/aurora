@@ -8,6 +8,7 @@ const mockDb = {
   query: jest.fn(),
   execute: jest.fn(),
   executeBatch: jest.fn(),
+  executeOut: jest.fn().mockResolvedValue({}),
 };
 
 const roleRow = {
