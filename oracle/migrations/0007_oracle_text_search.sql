@@ -1,0 +1,33 @@
+-- BUILD ONLY: run npm run db:migrate when Oracle available
+
+-- Grant Oracle Text role required for CONTAINS() and CTX_DDL operations
+GRANT CTXAPP TO AURORA_CMS;
+/
+
+-- View that concatenates searchable content from PAGES and their block JSON
+CREATE OR REPLACE VIEW AURORA_CMS.CONTENT_SEARCH_VIEW AS
+SELECT
+    p.ID,
+    p.TITLE || ' ' || p.SLUG || ' ' ||
+        NVL(JSON_QUERY(p.CONTENT, '$.blocks[*].text' WITH ARRAY WRAPPER), '') AS SEARCH_TEXT,
+    p.STATUS,
+    p.PUBLISHED_AT,
+    p.CREATED_BY,
+    p.UPDATED_AT
+FROM AURORA_CMS.PAGES p
+WHERE p.DELETED_AT IS NULL;
+/
+
+-- Oracle Text CONTEXT index on the concatenated search text
+-- SYNC ON COMMIT for dev; switch to SYNC(EVERY "SYSDATE+5/1440") for production
+BEGIN
+    CTX_DDL.CREATE_PREFERENCE('AURORA_SEARCH_LEXER', 'BASIC_LEXER');
+    CTX_DDL.SET_ATTRIBUTE('AURORA_SEARCH_LEXER', 'MIXED_CASE', 'YES');
+END;
+/
+
+CREATE INDEX AURORA_CMS.CONTENT_SEARCH_IDX
+    ON AURORA_CMS.CONTENT_SEARCH_VIEW(SEARCH_TEXT)
+    INDEXTYPE IS CTXSYS.CONTEXT
+    PARAMETERS ('LEXER AURORA_SEARCH_LEXER SYNC (ON COMMIT)');
+/

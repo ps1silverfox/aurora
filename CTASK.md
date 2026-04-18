@@ -279,7 +279,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Frontend: `ReusableBlockNode` — insert from template library, detach-on-edit option
 - Files: `oracle/migrations/0006_block_templates.sql`, `src/content/block-templates.controller.ts`, `frontend/src/editor/nodes/ReusableBlock.tsx`
 
-### [ ] TS-4.5 — Editor UX polish
+### [x] TS-4.5 — Editor UX polish
 - Undo/redo: Lexical built-in history plugin
 - Keyboard shortcuts: `Ctrl+B` bold, `Ctrl+I` italic, `Ctrl+Z` undo, `Ctrl+Shift+Z` redo, `Ctrl+S` save draft
 - Block settings sidebar: slide-in panel when block selected
@@ -292,7 +292,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 5: Oracle Text Search
 
-### [ ] TS-5.1 — Oracle Text index
+### [x] TS-5.1 — Oracle Text index
 - Create `oracle/migrations/0007_oracle_text_search.sql`:
   - Concatenated column or `CONTENT_SEARCH_VIEW` that joins `PAGES.TITLE + PAGES.SLUG + flattened block text`
   - `CONTENT_SEARCH_IDX` — Oracle Text `CTXSYS.CONTEXT` index on the search view (SYNC ON COMMIT for dev, SYNC EVERY '00:05:00' for prod)
