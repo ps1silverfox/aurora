@@ -1,0 +1,59 @@
+-- BUILD ONLY: run npm run db:migrate when Oracle available
+
+-- Object type for AQ message payload
+CREATE OR REPLACE TYPE AQ_EVENT_TYPE AS OBJECT (
+  SUBJECT  VARCHAR2(200),
+  PAYLOAD  CLOB
+);
+/
+
+-- Queue table (one queue table, multiple queues)
+BEGIN
+  DBMS_AQADM.CREATE_QUEUE_TABLE(
+    queue_table        => 'AURORA_CMS.AQ_EVENT_QT',
+    queue_payload_type => 'AURORA_CMS.AQ_EVENT_TYPE',
+    multiple_consumers => FALSE,
+    compatible         => '10.0'
+  );
+END;
+/
+
+-- Individual topic queues
+BEGIN
+  DBMS_AQADM.CREATE_QUEUE(queue_name => 'AURORA_CMS.AQ_CONTENT_PUBLISHED',  queue_table => 'AURORA_CMS.AQ_EVENT_QT');
+  DBMS_AQADM.CREATE_QUEUE(queue_name => 'AURORA_CMS.AQ_CONTENT_UPDATED',    queue_table => 'AURORA_CMS.AQ_EVENT_QT');
+  DBMS_AQADM.CREATE_QUEUE(queue_name => 'AURORA_CMS.AQ_CONTENT_DELETED',    queue_table => 'AURORA_CMS.AQ_EVENT_QT');
+  DBMS_AQADM.CREATE_QUEUE(queue_name => 'AURORA_CMS.AQ_MEDIA_UPLOADED',     queue_table => 'AURORA_CMS.AQ_EVENT_QT');
+  DBMS_AQADM.CREATE_QUEUE(queue_name => 'AURORA_CMS.AQ_WORKFLOW_TRANSITION', queue_table => 'AURORA_CMS.AQ_EVENT_QT');
+  DBMS_AQADM.CREATE_QUEUE(queue_name => 'AURORA_CMS.AQ_PLUGIN_LIFECYCLE',   queue_table => 'AURORA_CMS.AQ_EVENT_QT');
+END;
+/
+
+-- Start queues
+BEGIN
+  DBMS_AQADM.START_QUEUE(queue_name => 'AURORA_CMS.AQ_CONTENT_PUBLISHED');
+  DBMS_AQADM.START_QUEUE(queue_name => 'AURORA_CMS.AQ_CONTENT_UPDATED');
+  DBMS_AQADM.START_QUEUE(queue_name => 'AURORA_CMS.AQ_CONTENT_DELETED');
+  DBMS_AQADM.START_QUEUE(queue_name => 'AURORA_CMS.AQ_MEDIA_UPLOADED');
+  DBMS_AQADM.START_QUEUE(queue_name => 'AURORA_CMS.AQ_WORKFLOW_TRANSITION');
+  DBMS_AQADM.START_QUEUE(queue_name => 'AURORA_CMS.AQ_PLUGIN_LIFECYCLE');
+END;
+/
+
+-- Grant enqueue/dequeue to AURORA_CMS user
+BEGIN
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'ENQUEUE', queue_name => 'AURORA_CMS.AQ_CONTENT_PUBLISHED',  grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'ENQUEUE', queue_name => 'AURORA_CMS.AQ_CONTENT_UPDATED',    grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'ENQUEUE', queue_name => 'AURORA_CMS.AQ_CONTENT_DELETED',    grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'ENQUEUE', queue_name => 'AURORA_CMS.AQ_MEDIA_UPLOADED',     grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'ENQUEUE', queue_name => 'AURORA_CMS.AQ_WORKFLOW_TRANSITION', grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'ENQUEUE', queue_name => 'AURORA_CMS.AQ_PLUGIN_LIFECYCLE',   grantee => 'AURORA_CMS');
+
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'DEQUEUE', queue_name => 'AURORA_CMS.AQ_CONTENT_PUBLISHED',  grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'DEQUEUE', queue_name => 'AURORA_CMS.AQ_CONTENT_UPDATED',    grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'DEQUEUE', queue_name => 'AURORA_CMS.AQ_CONTENT_DELETED',    grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'DEQUEUE', queue_name => 'AURORA_CMS.AQ_MEDIA_UPLOADED',     grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'DEQUEUE', queue_name => 'AURORA_CMS.AQ_WORKFLOW_TRANSITION', grantee => 'AURORA_CMS');
+  DBMS_AQADM.GRANT_QUEUE_PRIVILEGE(privilege => 'DEQUEUE', queue_name => 'AURORA_CMS.AQ_PLUGIN_LIFECYCLE',   grantee => 'AURORA_CMS');
+END;
+/

@@ -306,7 +306,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests (`// @csv-mode`): mock `DbService`, assert `SearchService.index()` calls `execute()` with a SQL string containing `CONTAINS`, assert `SearchService.search()` calls `query()` and returns mapped results. CSV driver returns pre-loaded fixture rows as mock search results.
 - Files: `oracle/migrations/0007_oracle_text_search.sql`, `oracle/packages/search_pkg.sql`, `src/search/search.service.ts`, `src/search/search.module.ts`
 
-### [ ] TS-5.2 — Search API and UI
+### [x] TS-5.2 — Search API and UI
 - Create `src/search/search.controller.ts`:
   - `GET /api/v1/search?q=...&status=...&category=...&tag=...&from=...&to=...`
   - Returns cursor-paginated results with `title`, `slug`, `snippet` (Oracle Text `CTX_DOC.SNIPPET`), `score`, `published_at`
@@ -319,7 +319,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 6: Oracle Advanced Queuing (Event System)
 
-### [ ] TS-6.1 — Oracle AQ setup and publisher
+### [x] TS-6.1 — Oracle AQ setup and publisher
 - Create `oracle/migrations/0008_oracle_aq.sql`:
   - Create AQ object type: `AQ_EVENT_TYPE OBJECT (SUBJECT VARCHAR2(200), PAYLOAD CLOB)` (or use `SYS.AQ$_JMS_TEXT_MESSAGE`)
   - Create queues via `DBMS_AQADM.CREATE_QUEUE_TABLE` and `DBMS_AQADM.CREATE_QUEUE` for topics: `content.published`, `content.updated`, `content.deleted`, `media.uploaded`, `workflow.transition`, `plugin.lifecycle`

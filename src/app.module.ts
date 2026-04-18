@@ -8,12 +8,14 @@ import { AuditModule } from './audit/audit.module';
 import { ContentModule } from './content/content.module';
 import { MediaModule } from './media/media.module';
 import { SearchModule } from './search/search.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     DbModule.forRoot(),
+    EventsModule,
     AuthModule,
     UsersModule,
     AuditModule,
