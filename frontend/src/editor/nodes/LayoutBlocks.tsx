@@ -365,7 +365,7 @@ function TabsBlockComponent({ nodeKey }: { nodeKey: NodeKey }) {
                   defaultValue={tab.label}
                   onBlur={(e) => {
                     const updated = [...tabs];
-                    updated[i] = { ...updated[i]!, label: e.currentTarget.value };
+                    updated[i] = { ...updated[i], label: e.currentTarget.value };
                     updateTabs(updated);
                   }}
                 />
@@ -377,7 +377,7 @@ function TabsBlockComponent({ nodeKey }: { nodeKey: NodeKey }) {
                   defaultValue={tab.content}
                   onBlur={(e) => {
                     const updated = [...tabs];
-                    updated[i] = { ...updated[i]!, content: e.currentTarget.value };
+                    updated[i] = { ...updated[i], content: e.currentTarget.value };
                     updateTabs(updated);
                   }}
                 />
@@ -520,7 +520,7 @@ function AccordionBlockComponent({ nodeKey }: { nodeKey: NodeKey }) {
                   defaultValue={item.title}
                   onBlur={(e) => {
                     const updated = [...items];
-                    updated[i] = { ...updated[i]!, title: e.currentTarget.value };
+                    updated[i] = { ...updated[i], title: e.currentTarget.value };
                     updateItems(updated);
                   }}
                 />
@@ -532,7 +532,7 @@ function AccordionBlockComponent({ nodeKey }: { nodeKey: NodeKey }) {
                   defaultValue={item.content}
                   onBlur={(e) => {
                     const updated = [...items];
-                    updated[i] = { ...updated[i]!, content: e.currentTarget.value };
+                    updated[i] = { ...updated[i], content: e.currentTarget.value };
                     updateItems(updated);
                   }}
                 />

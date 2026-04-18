@@ -24,6 +24,18 @@ export {
   $isTabsBlockNode,
   $isAccordionBlockNode,
 } from './LayoutBlocks';
+export {
+  TableBlockNode,
+  $createTableBlockNode,
+  $isTableBlockNode,
+} from './TableBlock';
+export {
+  EmbedBlockNode,
+  $createEmbedBlockNode,
+  $isEmbedBlockNode,
+  getEmbedUrl,
+  type EmbedProvider,
+} from './EmbedBlocks';
 
 import type { Klass, LexicalNode } from 'lexical';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
@@ -32,6 +44,8 @@ import { CodeNode, CodeHighlightNode } from '@lexical/code';
 import { DividerNode } from './DividerNode';
 import { ImageBlockNode, VideoBlockNode } from './MediaBlocks';
 import { ColumnsBlockNode, SectionBlockNode, TabsBlockNode, AccordionBlockNode } from './LayoutBlocks';
+import { TableBlockNode } from './TableBlock';
+import { EmbedBlockNode } from './EmbedBlocks';
 
 export const ALL_EDITOR_NODES: ReadonlyArray<Klass<LexicalNode>> = [
   HeadingNode,
@@ -47,4 +61,6 @@ export const ALL_EDITOR_NODES: ReadonlyArray<Klass<LexicalNode>> = [
   SectionBlockNode,
   TabsBlockNode,
   AccordionBlockNode,
+  TableBlockNode,
+  EmbedBlockNode,
 ];

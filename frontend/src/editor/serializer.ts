@@ -31,6 +31,8 @@ import {
   type TabItem,
   type AccordionItem,
 } from './nodes/LayoutBlocks';
+import { $isTableBlockNode, TableBlockNode } from './nodes/TableBlock';
+import { $createEmbedBlockNode, $isEmbedBlockNode } from './nodes/EmbedBlocks';
 
 export interface Block {
   type: string;
@@ -87,6 +89,17 @@ function serializeNode(node: LexicalNode): Block | null {
 
   if ($isAccordionBlockNode(node)) {
     return { type: 'accordion', content: { items: node.__items } };
+  }
+
+  if ($isTableBlockNode(node)) {
+    return {
+      type: 'table',
+      content: { rows: node.__rows, cols: node.__cols, cells: node.__cells, headerRow: node.__headerRow, striped: node.__striped },
+    };
+  }
+
+  if ($isEmbedBlockNode(node)) {
+    return { type: 'embed', content: { url: node.__url, height: node.__height, caption: node.__caption } };
   }
 
   if ($isParagraphNode(node)) {
@@ -166,6 +179,16 @@ function deserializeBlock(block: Block): LexicalNode | null {
     case 'accordion': {
       const { items } = block.content as { items: AccordionItem[] };
       return $createAccordionBlockNode(items);
+    }
+    case 'table': {
+      const { rows, cols, cells, headerRow, striped } = block.content as {
+        rows: number; cols: number; cells: string[][]; headerRow: boolean; striped: boolean;
+      };
+      return new TableBlockNode(rows, cols, cells, headerRow, striped);
+    }
+    case 'embed': {
+      const { url, height, caption } = block.content as { url: string; height: number; caption: string };
+      return $createEmbedBlockNode(url, height, caption);
     }
     case 'text':
     default: {
