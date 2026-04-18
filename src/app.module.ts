@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { AuditModule } from './audit/audit.module';
 import { ContentModule } from './content/content.module';
 import { MediaModule } from './media/media.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MediaModule } from './media/media.module';
     AuditModule,
     ContentModule,
     MediaModule,
+    SearchModule,
   ],
   controllers: [],
   providers: [],
