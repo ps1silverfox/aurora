@@ -382,7 +382,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests
 - Files: `oracle/migrations/0010_data_viz.sql`, `src/data-viz/data-source.service.ts`
 
-### [ ] TS-8.2 — Query engine with Oracle-native path
+### [x] TS-8.2 — Query engine with Oracle-native path
 - Create `src/data-viz/query-engine.service.ts`:
   - Oracle source: uses `OracleService` — parameterized read-only query (forced `SELECT` only, max 10k rows, `ROW_NUMBER()` pagination)
   - PostgreSQL source: uses `pg` driver (MIT), parameterized query, read-only connection
