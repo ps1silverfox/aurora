@@ -33,7 +33,6 @@ describe('AuditService', () => {
         diff: { email: 'new@example.com' },
       });
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockDb.execute).toHaveBeenCalledTimes(1);
       const [sql, binds] = mockDb.execute.mock.calls[0] as [string, Record<string, unknown>];
 
