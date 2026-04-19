@@ -565,7 +565,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 13: E2E and Integration Tests
 
-### [ ] TS-13.1 — E2E critical paths (Playwright)
+### [x] TS-13.1 — E2E critical paths (Playwright)
 - `test/e2e/auth.spec.ts` — Login via Keycloak → redirect to admin dashboard → user is authenticated
 - `test/e2e/content.spec.ts` — Create page with text+image blocks → publish → verify SSR HTML contains block content
 - `test/e2e/search.spec.ts` — Publish page → search endpoint returns it (CSV mode: verify response shape and mock search result)
