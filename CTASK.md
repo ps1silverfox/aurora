@@ -484,7 +484,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Revision history sidebar: list revisions, click to view diff, restore button
 - Files: `frontend/src/features/content/PageList.tsx`, `frontend/src/features/content/PageEditor.tsx`, `frontend/src/features/content/RevisionSidebar.tsx`
 
-### [ ] TS-10.3 — Users, roles, and audit log UI
+### [x] TS-10.3 — Users, roles, and audit log UI
 - `UserList.tsx` — user table with role badge, role assignment dropdown
 - `RoleEditor.tsx` — create/edit role with permission checkboxes
 - `AuditLogBrowser.tsx` — filterable paginated table (filter: entity type, actor, date range), expandable row shows diff JSON
