@@ -8,12 +8,19 @@ import { AuditService } from '../audit/audit.service';
 import { PluginSandboxService, SandboxedPluginApi } from './plugin-sandbox.service';
 import { BlockRegistry } from './block-registry';
 import { PluginRouteRegistry } from './plugin-route-registry';
+import { HookManager, ActionCallback } from './hook-manager';
+
+export interface PluginHooksApi {
+  addAction(hook: string, callback: ActionCallback, priority?: number): void;
+  removeAction(hook: string, callback: ActionCallback): void;
+}
 
 export interface PluginContext {
   content: Pick<ContentService, 'listPages' | 'getPage'>;
   audit: Pick<AuditService, 'log'>;
   db: Pick<IDbService, 'query'>;
   sandbox: SandboxedPluginApi;
+  hooks: PluginHooksApi;
 }
 
 interface LoadedPlugin {
@@ -26,6 +33,7 @@ export class PluginLifecycleService {
   private readonly logger = new Logger(PluginLifecycleService.name);
   private readonly pluginsDir = path.join(process.cwd(), 'plugins');
   private readonly loaded = new Map<string, LoadedPlugin>();
+  private readonly pluginHooks = new Map<string, Array<{ hook: string; callback: ActionCallback }>>();
 
   constructor(
     @Inject(DB_SERVICE) private readonly db: IDbService,
@@ -35,6 +43,7 @@ export class PluginLifecycleService {
     private readonly sandboxService: PluginSandboxService,
     private readonly blockRegistry: BlockRegistry,
     private readonly routeRegistry: PluginRouteRegistry,
+    private readonly hookManager: HookManager,
   ) {}
 
   async install(dir: string): Promise<Plugin> {
@@ -115,6 +124,12 @@ export class PluginLifecycleService {
       }
       this.loaded.delete(id);
     }
+
+    const registered = this.pluginHooks.get(id) ?? [];
+    for (const { hook, callback } of registered) {
+      this.hookManager.removeAction(hook, callback);
+    }
+    this.pluginHooks.delete(id);
 
     this.blockRegistry.unregisterByPlugin(plugin.name);
     this.routeRegistry.unregisterPlugin(plugin.name);
@@ -229,6 +244,15 @@ export class PluginLifecycleService {
         query: this.db.query.bind(this.db),
       },
       sandbox: this.sandboxService.buildSandboxedApi(pluginId, manifest),
+      hooks: {
+        addAction: (hook, callback, priority) => {
+          this.hookManager.registerAction(hook, callback, priority);
+          const registered = this.pluginHooks.get(pluginId) ?? [];
+          registered.push({ hook, callback });
+          this.pluginHooks.set(pluginId, registered);
+        },
+        removeAction: (hook, callback) => { this.hookManager.removeAction(hook, callback); },
+      },
     };
   }
 }

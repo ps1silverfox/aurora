@@ -8,9 +8,10 @@ import { PluginSandboxService } from './plugin-sandbox.service';
 import { BlockRegistry } from './block-registry';
 import { PluginRouteRegistry } from './plugin-route-registry';
 import { PluginsController } from './plugins.controller';
+import { HookManagerModule } from './hook-manager.module';
 
 @Module({
-  imports: [DbModule, ContentModule, AuditModule],
+  imports: [DbModule, ContentModule, AuditModule, HookManagerModule],
   controllers: [PluginsController],
   providers: [
     PluginDiscoveryService,
@@ -19,6 +20,6 @@ import { PluginsController } from './plugins.controller';
     BlockRegistry,
     PluginRouteRegistry,
   ],
-  exports: [PluginDiscoveryService, PluginLifecycleService, BlockRegistry, PluginRouteRegistry],
+  exports: [PluginDiscoveryService, PluginLifecycleService, BlockRegistry, PluginRouteRegistry, HookManagerModule],
 })
 export class PluginsModule {}

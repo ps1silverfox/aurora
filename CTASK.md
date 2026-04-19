@@ -591,14 +591,14 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Verify idempotency: publish same event twice, assert downstream called only once (dedup by event ID)
 - Files: `test/integration/oracle-aq.integration.spec.ts`
 
-### [ ] TS-13.4 — Integration test: Data query with cache (`// @csv-mode`)
+### [x] TS-13.4 — Integration test: Data query with cache (`// @csv-mode`)
 - `DB_DRIVER=csv` — Oracle source driver replaced by CSV driver reading `test/fixtures/csv/CONTENT_ANALYTICS_MV.csv`
 - Execute query via `QueryEngine`, verify result rows match fixture data, `meta.cached = false`
 - Execute same query again, verify Valkey cache hit: `meta.cached = true`, same rows returned
 - Clear Valkey cache key, execute again, verify `meta.cached = false`
 - Files: `test/integration/data-query.integration.spec.ts`
 
-### [ ] TS-13.5 — Integration test: Plugin lifecycle with hook execution (`// @csv-mode`)
+### [x] TS-13.5 — Integration test: Plugin lifecycle with hook execution (`// @csv-mode`)
 - `DB_DRIVER=csv` — plugin records persisted in `CsvDriver` in-memory store
 - Install test plugin from `test/fixtures/test-plugin/`
 - Activate via `PluginLifecycleService`, verify in-memory AQ queue received `plugin.activated` event

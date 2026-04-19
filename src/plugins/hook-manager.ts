@@ -68,6 +68,13 @@ export class HookManager {
     return current;
   }
 
+  removeAction(hook: HookPoint, callback: ActionCallback): void {
+    const entries = this.actions.get(hook);
+    if (entries) {
+      this.actions.set(hook, entries.filter((e) => e.callback !== callback));
+    }
+  }
+
   removeAllHandlers(hook: HookPoint): void {
     this.actions.delete(hook);
     this.filters.delete(hook);

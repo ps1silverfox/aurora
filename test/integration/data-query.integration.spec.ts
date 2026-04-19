@@ -48,9 +48,10 @@ describe('Data query with cache integration (csv-mode)', () => {
     // In-memory Redis mock: supports get/set/del commands used by QueryEngineService
     mockRedis = {};
     const redisMock = {
-      get: jest.fn(async (key: string) => mockRedis[key] ?? null),
-      set: jest.fn(async (key: string, val: string, _ex: string, _ttl: number) => { mockRedis[key] = val; return 'OK'; }),
-      del: jest.fn(async (key: string) => { delete mockRedis[key]; return 1; }),
+      get: jest.fn((key: string) => Promise.resolve(mockRedis[key] ?? null)),
+      set: jest.fn((key: string, val: string) => { mockRedis[key] = val; return Promise.resolve('OK'); }),
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      del: jest.fn((key: string) => { delete mockRedis[key]; return Promise.resolve(1); }),
     };
 
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -67,7 +68,10 @@ describe('Data query with cache integration (csv-mode)', () => {
 
   beforeEach(() => {
     // Clear cache between tests
-    Object.keys(mockRedis).forEach((k) => { delete mockRedis[k]; });
+    for (const k of Object.keys(mockRedis)) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete mockRedis[k];
+    }
   });
 
   it('first query returns fixture rows with meta.cached = false', async () => {
@@ -88,6 +92,7 @@ describe('Data query with cache integration (csv-mode)', () => {
     await engine.execute(SOURCE_ID, QUERY); // populate cache
     // Manually delete the cache key
     const cacheKey = Object.keys(mockRedis)[0];
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     if (cacheKey) delete mockRedis[cacheKey];
 
     const result = await engine.execute(SOURCE_ID, QUERY);
