@@ -12,6 +12,7 @@ import { EventsModule } from './events/events.module';
 import { ThemesModule } from './themes/themes.module';
 import { DataVizModule } from './data-viz/data-viz.module';
 import { PluginsModule } from './plugins/plugins.module';
+import { HookManagerModule } from './plugins/hook-manager.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { PluginsModule } from './plugins/plugins.module';
     SearchModule,
     ThemesModule,
     DataVizModule,
+    HookManagerModule,
     PluginsModule,
   ],
   controllers: [],
