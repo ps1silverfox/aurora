@@ -507,7 +507,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 11: Taxonomy and Knowledge Base
 
-### [ ] TS-11.1 — Categories and tags
+### [x] TS-11.1 — Categories and tags
 - Create `oracle/migrations/0014_taxonomy.sql`:
   - `CATEGORIES` table: `ID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY`, `NAME VARCHAR2(255)`, `SLUG VARCHAR2(255) UNIQUE`, `PARENT_ID NUMBER REFERENCES CATEGORIES(ID)`, `SORT_ORDER NUMBER DEFAULT 0`
   - `TAGS` table: `ID NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY`, `NAME VARCHAR2(255)`, `SLUG VARCHAR2(255) UNIQUE`

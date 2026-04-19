@@ -14,6 +14,7 @@ import { DataVizModule } from './data-viz/data-viz.module';
 import { PluginsModule } from './plugins/plugins.module';
 import { HookManagerModule } from './plugins/hook-manager.module';
 import { NotificationsModule } from './notifications/notification.module';
+import { TaxonomyModule } from './taxonomy/taxonomy.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { NotificationsModule } from './notifications/notification.module';
     HookManagerModule,
     PluginsModule,
     NotificationsModule,
+    TaxonomyModule,
   ],
   controllers: [],
   providers: [],
