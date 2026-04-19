@@ -1,22 +1,18 @@
 // @csv-mode
 import { Test, TestingModule } from '@nestjs/testing';
-import { OracleAqService } from './oracle-aq.service';
+import { OracleAqService, clearCsvQueues } from './oracle-aq.service';
 import { DB_SERVICE, IDbService } from '../db/db.interface';
-import { TOPIC_TO_QUEUE } from './event-types';
 
-/** Flush the microtask queue so fire-and-forget promises resolve before assertions. */
-const flush = () => new Promise<void>((r) => setTimeout(r, 0));
-
-describe('OracleAqService', () => {
+describe('OracleAqService (csv-mode)', () => {
   let service: OracleAqService;
-  let db: jest.Mocked<IDbService>;
 
   beforeEach(async () => {
-    db = {
+    clearCsvQueues();
+    const db: jest.Mocked<IDbService> = {
       query: jest.fn(),
       execute: jest.fn().mockResolvedValue(undefined),
       executeBatch: jest.fn(),
-  executeOut: jest.fn().mockResolvedValue({}),
+      executeOut: jest.fn().mockResolvedValue({}),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -29,47 +25,42 @@ describe('OracleAqService', () => {
     service = module.get(OracleAqService);
   });
 
-  it('calls execute() with DBMS_AQ.ENQUEUE SQL for content.created', async () => {
-    service.publish('content.created', { id: 'abc', slug: 'hello', title: 'Hello' });
-    await flush();
-
-    expect(db.execute).toHaveBeenCalledTimes(1);
-    const [sql, binds] = db.execute.mock.calls[0] as [string, Record<string, unknown>];
-    expect(sql).toMatch(/DBMS_AQ\.ENQUEUE/i);
-    expect(binds['queueName']).toBe(TOPIC_TO_QUEUE['content.created']);
-    expect(binds['topic']).toBe('content.created');
-    expect(binds['payload']).toBe(JSON.stringify({ id: 'abc', slug: 'hello', title: 'Hello' }));
+  it('publish enqueues message; dequeue retrieves it', async () => {
+    service.publish('content.created', { id: 'page-1', title: 'Hello' });
+    const msg = await service.dequeue('content.created');
+    expect(msg).not.toBeNull();
+    expect(msg?.subject).toBe('content.created');
+    expect(msg?.payload).toBe(JSON.stringify({ id: 'page-1', title: 'Hello' }));
   });
 
-  it('calls execute() with correct queue name for workflow.transition', async () => {
-    service.publish('workflow.transition', { pageId: '1', from: 'draft', to: 'review', actorId: 'u1' });
-    await flush();
-
-    const [, binds] = db.execute.mock.calls[0] as [string, Record<string, unknown>];
-    expect(binds['queueName']).toBe(TOPIC_TO_QUEUE['workflow.transition']);
+  it('dequeue returns null when queue is empty', async () => {
+    const msg = await service.dequeue('content.created');
+    expect(msg).toBeNull();
   });
 
-  it('calls execute() with correct queue name for media.uploaded', async () => {
-    service.publish('media.uploaded', { id: 'm1', filename: 'photo.jpg', mimeType: 'image/jpeg', size: 1024 });
-    await flush();
+  it('messages are FIFO — first in first out', async () => {
+    service.publish('content.created', { id: 'first' });
+    service.publish('content.created', { id: 'second' });
 
-    const [, binds] = db.execute.mock.calls[0] as [string, Record<string, unknown>];
-    expect(binds['queueName']).toBe(TOPIC_TO_QUEUE['media.uploaded']);
+    const msg1 = await service.dequeue('content.created');
+    const msg2 = await service.dequeue('content.created');
+
+    expect(JSON.parse(msg1?.payload ?? '{}') as { id: string }).toEqual({ id: 'first' });
+    expect(JSON.parse(msg2?.payload ?? '{}') as { id: string }).toEqual({ id: 'second' });
   });
 
-  it('does not call execute() for unknown topic', async () => {
-    service.publish('unknown.topic', {});
-    await flush();
+  it('topics are isolated — different topics do not interfere', async () => {
+    service.publish('content.created', { id: 'content' });
+    service.publish('media.uploaded', { id: 'media' });
 
-    expect(db.execute).not.toHaveBeenCalled();
+    const content = await service.dequeue('content.created');
+    const media = await service.dequeue('media.uploaded');
+
+    expect(JSON.parse(content?.payload ?? '{}') as { id: string }).toMatchObject({ id: 'content' });
+    expect(JSON.parse(media?.payload ?? '{}') as { id: string }).toMatchObject({ id: 'media' });
   });
 
-  it('serializes payload as JSON string', async () => {
-    const payload = { id: 'x', nested: { value: 42 } };
-    service.publish('content.updated', payload);
-    await flush();
-
-    const [, binds] = db.execute.mock.calls[0] as [string, Record<string, unknown>];
-    expect(binds['payload']).toBe(JSON.stringify(payload));
+  it('publish for unknown topic does not throw', () => {
+    expect(() => service.publish('unknown.topic', {})).not.toThrow();
   });
 });

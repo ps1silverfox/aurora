@@ -118,7 +118,7 @@ describe('Content lifecycle integration (csv-mode)', () => {
     expect(res.status).toBe(200);
     const body = res.body as { data: RevisionBody[] };
     expect(body.data.length).toBeGreaterThanOrEqual(1);
-    revisionId = body.data[0]!.id;
+    revisionId = (body.data[0] as RevisionBody).id;
   });
 
   it('restore revision reverts page to prior snapshot', async () => {

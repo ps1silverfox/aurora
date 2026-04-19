@@ -34,13 +34,36 @@ BEGIN
   COMMIT;
 END;`;
 
+// In CSV mode, an in-memory per-topic queue replaces Oracle AQ.
+const CSV_QUEUES = new Map<string, { subject: string; payload: string }[]>();
+
+function csvEnqueue(topic: string, payload: string): void {
+  const q = CSV_QUEUES.get(topic) ?? [];
+  q.push({ subject: topic, payload });
+  CSV_QUEUES.set(topic, q);
+}
+
+function csvDequeue(topic: string): { subject: string; payload: string } | null {
+  const q = CSV_QUEUES.get(topic);
+  if (!q || q.length === 0) return null;
+  return q.shift() ?? null;
+}
+
+/** Exposed for tests: drain all in-memory queues. */
+export function clearCsvQueues(): void {
+  CSV_QUEUES.clear();
+}
+
 @Injectable()
 export class OracleAqService implements IEventPublisher {
   private readonly logger = new Logger(OracleAqService.name);
+  private readonly csvMode = process.env['DB_DRIVER'] !== 'oracle';
 
   constructor(@Inject(DB_SERVICE) private readonly db: IDbService) {}
 
   async dequeue(topic: string): Promise<{ subject: string; payload: string } | null> {
+    if (this.csvMode) return csvDequeue(topic);
+
     const queueName = TOPIC_TO_QUEUE[topic];
     if (!queueName) {
       this.logger.warn(`No AQ queue mapped for topic: ${topic}`);
@@ -52,7 +75,6 @@ export class OracleAqService implements IEventPublisher {
         subject: { dir: 'out', type: 'string' },
         payload: { dir: 'out', type: 'string' },
       });
-      // CSV mode returns {} — treat as empty queue
       if (!out['subject'] && !out['payload']) return null;
       return { subject: out['subject'] as string, payload: out['payload'] as string };
     } catch (err: unknown) {
@@ -65,16 +87,21 @@ export class OracleAqService implements IEventPublisher {
   }
 
   publish(topic: string, payload: unknown): void {
+    const payloadJson = JSON.stringify(payload);
+
+    if (this.csvMode) {
+      csvEnqueue(topic, payloadJson);
+      this.logger.debug(`[csv] Enqueued ${topic}`);
+      return;
+    }
+
     const queueName = TOPIC_TO_QUEUE[topic];
     if (!queueName) {
       this.logger.warn(`No AQ queue mapped for topic: ${topic}`);
       return;
     }
 
-    const payloadJson = JSON.stringify(payload);
-
     // Fire-and-forget: errors are logged but do not propagate to callers.
-    // In CSV mode DbService.execute() is a no-op for BEGIN blocks.
     this.db
       .execute(ENQUEUE_SQL, { queueName, topic, payload: payloadJson, msgId: null })
       .then(() => { this.logger.debug(`Enqueued ${topic} → ${queueName}`); })

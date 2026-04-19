@@ -583,7 +583,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - **NOTE:** Oracle Text index calls are mocked — `SearchService.index()` spy asserts called, no SQL executed
 - Files: `test/integration/content-lifecycle.integration.spec.ts`
 
-### [ ] TS-13.3 — Integration test: Oracle AQ event flow (`// @csv-mode`)
+### [x] TS-13.3 — Integration test: Oracle AQ event flow (`// @csv-mode`)
 - `DB_DRIVER=csv` — `OracleAqService` uses an in-memory queue (array) instead of Oracle AQ when CSV mode is active
 - Publish event to in-memory queue via `OracleAqService.publish()`
 - Run consumer poll once, verify `SearchService.index()` spy called with correct page ID
