@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DbModule } from './db/db.module';
+import { ObservabilityModule } from './observability/observability.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AuditModule } from './audit/audit.module';
@@ -20,6 +21,7 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
   imports: [
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
+    ObservabilityModule,
     DbModule.forRoot(),
     EventsModule,
     AuthModule,
