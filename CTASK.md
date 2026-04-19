@@ -531,13 +531,13 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 12: Observability & Hardening
 
-### [ ] TS-12.1 — Structured logging
+### [x] TS-12.1 — Structured logging
 - Install `pino` (MIT) as NestJS logger adapter
 - Log format: JSON to stdout. Every request log includes `request_id` (generated UUID), `method`, `path`, `status`, `duration_ms`, `user_id`
 - Create `src/observability/logging.interceptor.ts` — global interceptor adding request_id to all logs
 - Files: `src/observability/logging.interceptor.ts`, `src/observability/logger.service.ts`
 
-### [ ] TS-12.2 — Metrics and tracing
+### [x] TS-12.2 — Metrics and tracing
 - Install `@opentelemetry/sdk-node` (Apache 2.0), `@opentelemetry/exporter-prometheus`
 - Prometheus metrics endpoint at `/metrics`: HTTP request rate, latency histogram (p50/p95/p99), Oracle pool utilization, Valkey cache hit rate, AQ queue depth
 - Distributed tracing spans: HTTP handler → service → Oracle query → Valkey
