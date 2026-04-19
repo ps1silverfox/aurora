@@ -414,7 +414,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
   - `DataTableBlockNode` — paginated sortable table
 - Files: `frontend/src/features/data-viz/ChartBuilder.tsx`, `frontend/src/editor/nodes/DataBlocks.tsx`
 
-### [ ] TS-8.5 — Cross-filtering and auto-refresh
+### [x] TS-8.5 — Cross-filtering and auto-refresh
 - Cross-filter context: React context `CrossFilterContext` per page view — chart click sets filter, other data blocks re-query
 - Auto-refresh: configurable polling interval per block (15s/30s/60s/5m/off), exponential backoff on error
 - Export button: calls `GET /api/v1/data-queries/:id/export?format=csv`, triggers browser download
@@ -424,7 +424,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 9: Plugin System
 
-### [ ] TS-9.1 — Plugin model and discovery
+### [x] TS-9.1 — Plugin model and discovery
 - Create `oracle/migrations/0012_plugins.sql`:
   - `PLUGINS` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `NAME VARCHAR2(255) UNIQUE`, `VERSION VARCHAR2(50)`, `STATUS VARCHAR2(20) CHECK (STATUS IN ('inactive','active','error'))`, `MANIFEST CLOB CHECK (MANIFEST IS JSON)`, `INSTALLED_AT TIMESTAMP WITH TIME ZONE`, `ACTIVATED_AT TIMESTAMP WITH TIME ZONE`
   - `PLUGIN_SETTINGS` table: `ID RAW(16) DEFAULT SYS_GUID() PRIMARY KEY`, `PLUGIN_ID RAW(16) REFERENCES PLUGINS(ID) ON DELETE CASCADE`, `KEY VARCHAR2(255)`, `VALUE CLOB`, UNIQUE(`PLUGIN_ID, KEY`)
@@ -432,7 +432,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests for discovery (mock filesystem)
 - Files: `oracle/migrations/0012_plugins.sql`, `src/plugins/plugin-discovery.service.ts`
 
-### [ ] TS-9.2 — Plugin lifecycle
+### [x] TS-9.2 — Plugin lifecycle
 - Create `src/plugins/plugin-lifecycle.service.ts`:
   - `install(dir)`, `activate(id)`, `deactivate(id)`, `uninstall(id)`
   - On activate: dynamic `require()` plugin entrypoint, call `plugin.activate(context)`, register hooks/blocks/routes, publish `plugin.activated` to AQ
