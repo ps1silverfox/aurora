@@ -470,7 +470,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 
 ## Phase 10: Admin UI
 
-### [ ] TS-10.1 — Admin layout and navigation
+### [x] TS-10.1 — Admin layout and navigation
 - `frontend/src/app/AdminLayout.tsx` — sidebar + top bar with user menu (name, role, logout)
 - Navigation: Dashboard, Pages, Media, Data Sources, Plugins, Themes, Users, Audit Log, Settings
 - Sidebar collapse on small screens (responsive)

@@ -1,20 +1,14 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, useRoutes } from 'react-router-dom';
+import { routes } from './routes';
 
-function NotFound() {
-  return <div>404 — Page Not Found</div>;
-}
-
-function Home() {
-  return <div>Aurora CMS</div>;
+function AppRoutes() {
+  return useRoutes(routes);
 }
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <AppRoutes />
     </BrowserRouter>
   );
 }
