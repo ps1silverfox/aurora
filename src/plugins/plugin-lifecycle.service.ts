@@ -5,11 +5,15 @@ import { EVENT_PUBLISHER, IEventPublisher } from '../events/event-publisher.inte
 import { Plugin, PluginRow, rowToPlugin } from './plugin.entity';
 import { ContentService } from '../content/content.service';
 import { AuditService } from '../audit/audit.service';
+import { PluginSandboxService, SandboxedPluginApi } from './plugin-sandbox.service';
+import { BlockRegistry } from './block-registry';
+import { PluginRouteRegistry } from './plugin-route-registry';
 
 export interface PluginContext {
   content: Pick<ContentService, 'listPages' | 'getPage'>;
   audit: Pick<AuditService, 'log'>;
   db: Pick<IDbService, 'query'>;
+  sandbox: SandboxedPluginApi;
 }
 
 interface LoadedPlugin {
@@ -21,7 +25,6 @@ interface LoadedPlugin {
 export class PluginLifecycleService {
   private readonly logger = new Logger(PluginLifecycleService.name);
   private readonly pluginsDir = path.join(process.cwd(), 'plugins');
-  // Map of pluginId -> loaded module instance
   private readonly loaded = new Map<string, LoadedPlugin>();
 
   constructor(
@@ -29,6 +32,9 @@ export class PluginLifecycleService {
     @Inject(EVENT_PUBLISHER) private readonly events: IEventPublisher,
     private readonly content: ContentService,
     private readonly audit: AuditService,
+    private readonly sandboxService: PluginSandboxService,
+    private readonly blockRegistry: BlockRegistry,
+    private readonly routeRegistry: PluginRouteRegistry,
   ) {}
 
   async install(dir: string): Promise<Plugin> {
@@ -75,7 +81,7 @@ export class PluginLifecycleService {
       throw new BadRequestException(`Failed to load plugin "${plugin.name}": ${String(err)}`);
     }
 
-    const ctx = this.buildContext();
+    const ctx = this.buildContext(id, plugin.manifest);
     try {
       await mod.activate(ctx);
     } catch (err) {
@@ -110,6 +116,9 @@ export class PluginLifecycleService {
       this.loaded.delete(id);
     }
 
+    this.blockRegistry.unregisterByPlugin(plugin.name);
+    this.routeRegistry.unregisterPlugin(plugin.name);
+
     await this.db.execute("UPDATE PLUGINS SET STATUS = 'inactive' WHERE ID = :id", { id });
     this.events.publish('plugin.deactivated', { id, name: plugin.name });
     this.logger.log(`Plugin "${plugin.name}" deactivated`);
@@ -133,6 +142,14 @@ export class PluginLifecycleService {
     return rows.map(rowToPlugin);
   }
 
+  async findByName(name: string): Promise<Plugin | undefined> {
+    const rows = await this.db.query<PluginRow>(
+      'SELECT ID, NAME, VERSION, STATUS, MANIFEST, INSTALLED_AT, ACTIVATED_AT FROM PLUGINS WHERE NAME = :name',
+      { name },
+    );
+    return rows[0] ? rowToPlugin(rows[0]) : undefined;
+  }
+
   private async findById(id: string): Promise<Plugin> {
     const rows = await this.db.query<PluginRow>(
       'SELECT ID, NAME, VERSION, STATUS, MANIFEST, INSTALLED_AT, ACTIVATED_AT FROM PLUGINS WHERE ID = :id',
@@ -142,7 +159,7 @@ export class PluginLifecycleService {
     return rowToPlugin(rows[0]);
   }
 
-  private buildContext(): PluginContext {
+  private buildContext(pluginId: string, manifest: import('./plugin.entity').PluginManifest): PluginContext {
     return {
       content: {
         listPages: this.content.listPages.bind(this.content),
@@ -154,6 +171,7 @@ export class PluginLifecycleService {
       db: {
         query: this.db.query.bind(this.db),
       },
+      sandbox: this.sandboxService.buildSandboxedApi(pluginId, manifest),
     };
   }
 }

@@ -5,6 +5,9 @@ import { DB_SERVICE } from '../db/db.interface';
 import { EVENT_PUBLISHER } from '../events/event-publisher.interface';
 import { ContentService } from '../content/content.service';
 import { AuditService } from '../audit/audit.service';
+import { PluginSandboxService } from './plugin-sandbox.service';
+import { BlockRegistry } from './block-registry';
+import { PluginRouteRegistry } from './plugin-route-registry';
 
 // Block real require() calls to plugins/
 jest.mock('path', () => {
@@ -62,6 +65,9 @@ describe('PluginLifecycleService', () => {
         { provide: EVENT_PUBLISHER, useValue: mockEvents },
         { provide: ContentService, useValue: mockContent },
         { provide: AuditService, useValue: mockAudit },
+        { provide: PluginSandboxService, useValue: { buildSandboxedApi: jest.fn().mockReturnValue({}) } },
+        { provide: BlockRegistry, useValue: { unregisterByPlugin: jest.fn() } },
+        { provide: PluginRouteRegistry, useValue: { unregisterPlugin: jest.fn() } },
       ],
     }).compile();
 
