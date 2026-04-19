@@ -574,7 +574,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Run with `DB_DRIVER=csv` — no Oracle connection required for E2E
 - Files: `test/e2e/*.spec.ts`
 
-### [ ] TS-13.2 — Integration test: Page CRUD with blocks and revisions (`// @csv-mode`)
+### [x] TS-13.2 — Integration test: Page CRUD with blocks and revisions (`// @csv-mode`)
 - `DB_DRIVER=csv` — all persistence through `CsvDriver` in-memory store
 - Create page via API, add multiple blocks, verify blocks stored in `DbService` in-memory state
 - Update blocks (add/reorder/remove), verify revision auto-created for each save

@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { IDbService } from './db.interface';
 
 type Row = Record<string, string | null>;
@@ -44,13 +45,28 @@ function buildWhereFilter(
   sql: string,
   binds: Record<string, unknown>,
 ): (row: Row) => boolean {
-  const wm = sql.match(/WHERE\s+(.+?)(?:\s+ORDER\s+BY|\s+GROUP\s+BY|\s*$)/is);
+  const wm = sql.match(/WHERE\s+([\s\S]+?)(?:\s+ORDER\s+BY|\s+GROUP\s+BY|\s*$)/is);
   if (!wm?.[1]) return () => true;
 
   const conditions = wm[1].split(/\s+AND\s+/i);
   return (row: Row) =>
     conditions.every((cond) => {
-      const eq = cond.match(/(\w+)\s*=\s*:(\w+)/i);
+      // IS NULL check
+      const isNull = cond.match(/(\w+)\s+IS\s+NULL/i);
+      if (isNull) {
+        const col = (isNull[1] ?? '').toUpperCase();
+        const v = row[col];
+        return v === null || v === undefined || v === '';
+      }
+      // IS NOT NULL check
+      const isNotNull = cond.match(/(\w+)\s+IS\s+NOT\s+NULL/i);
+      if (isNotNull) {
+        const col = (isNotNull[1] ?? '').toUpperCase();
+        const v = row[col];
+        return v !== null && v !== undefined && v !== '';
+      }
+      // Match: COL = :bind  OR  COL = HEXTORAW(:bind)  OR  COL = SOME_FN(:bind)
+      const eq = cond.match(/(\w+)\s*=\s*(?:\w+\s*\(\s*)?:(\w+)(?:\s*\))?/i);
       if (!eq) return true;
       const col = (eq[1] ?? '').toUpperCase();
       const bindName = eq[2] ?? '';
@@ -59,7 +75,7 @@ function buildWhereFilter(
 }
 
 function selectColumns(row: Row, sql: string): Row {
-  const cm = sql.match(/SELECT\s+(.+?)\s+FROM/i);
+  const cm = sql.match(/SELECT\s+(.+?)\s+FROM/is); // 's' flag: . matches newlines
   if (!cm?.[1]) return row;
   const colClause = cm[1].trim();
   if (colClause === '*') return row;
@@ -136,7 +152,8 @@ export class CsvDriver implements IDbService, OnModuleInit {
 
   private handleInsert(sql: string, binds: Record<string, unknown>): void {
     const tm = sql.match(/INSERT\s+INTO\s+(\w+)\s*\(([^)]+)\)/i);
-    const vm = sql.match(/VALUES\s*\(([^)]+)\)/i);
+    // Greedy match to last ')' handles HEXTORAW(:col) style function calls in VALUES
+    const vm = sql.match(/VALUES\s*\((.*)\)\s*$/is);
     if (!tm || !vm) return;
 
     const tableName = (tm[1] ?? '').toUpperCase();
@@ -145,11 +162,27 @@ export class CsvDriver implements IDbService, OnModuleInit {
 
     const row: Row = {};
     cols.forEach((col, i) => {
-      const bm = (vals[i] ?? '').match(/^:(\w+)$/);
-      row[col] = bm
-        ? toBindString(binds[bm[1] ?? ''])
-        : (vals[i] ?? '').replace(/^'|'$/g, '');
+      const val = (vals[i] ?? '').trim();
+      // :bind — direct bind variable
+      const directBind = val.match(/^:(\w+)$/);
+      if (directBind) {
+        row[col] = toBindString(binds[directBind[1] ?? '']);
+        return;
+      }
+      // FUNCNAME(:bind) or FUNCNAME(:bind) — extract bind from wrapper (e.g. HEXTORAW)
+      const fnBind = val.match(/^\w+\s*\(\s*:(\w+)\s*\)$/);
+      if (fnBind) {
+        row[col] = toBindString(binds[fnBind[1] ?? '']);
+        return;
+      }
+      // Literal string or keyword
+      row[col] = val.replace(/^'|'$/g, '');
     });
+
+    // Simulate Oracle DEFAULT SYS_GUID() for rows without an explicit ID
+    if (!row['ID']) {
+      row['ID'] = crypto.randomUUID().replace(/-/g, '').toUpperCase();
+    }
 
     let table = this.tables.get(tableName);
     if (!table) {
@@ -167,7 +200,7 @@ export class CsvDriver implements IDbService, OnModuleInit {
     const rows = this.tables.get(tableName) ?? [];
     const filter = buildWhereFilter(sql, binds);
 
-    const sm = sql.match(/SET\s+(.+?)(?:\s+WHERE|\s*$)/i);
+    const sm = sql.match(/SET\s+([\s\S]+?)(?:\s+WHERE|\s*$)/is);
     if (!sm?.[1]) return;
 
     const assignments = sm[1].split(',').map((a) => {

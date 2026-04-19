@@ -115,8 +115,8 @@ export class ContentRepository {
 
   async createPage(data: CreatePageData): Promise<Page> {
     await this.db.execute(
-      `INSERT INTO PAGES (TITLE, SLUG, AUTHOR_ID, SCHEDULED_AT)
-       VALUES (:title, :slug, HEXTORAW(:authorId), :scheduledAt)`,
+      `INSERT INTO PAGES (TITLE, SLUG, STATUS, AUTHOR_ID, SCHEDULED_AT)
+       VALUES (:title, :slug, 'draft', HEXTORAW(:authorId), :scheduledAt)`,
       {
         title: data.title,
         slug: data.slug,

@@ -6,6 +6,7 @@ const config: Config = {
   testMatch: ['**/test/integration/**/*.integration.spec.ts'],
   transform: { '^.+\\.(t|j)s$': 'ts-jest' },
   testEnvironment: 'node',
+  transformIgnorePatterns: ['node_modules/(?!(jwks-rsa|jose)/)'],
 };
 
 export default config;
