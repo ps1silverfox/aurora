@@ -2,8 +2,8 @@ import Papa from 'papaparse';
 import { IQueryDriver, QueryConfig, Row } from './driver.interface';
 
 interface CsvConfig {
-  /** Raw CSV string, base64-encoded CSV, or file path hint */
-  data: string;
+  /** Raw CSV string, or pre-parsed Row array for testing */
+  data: string | Row[];
   delimiter?: string;
   header?: boolean;
 }
@@ -12,9 +12,12 @@ export class CsvDriver implements IQueryDriver {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   execute(connectionConfig: Record<string, unknown>, _query: QueryConfig): Promise<Row[]> {
     const cfg = connectionConfig as unknown as CsvConfig;
-    const raw = cfg.data;
 
-    const result = Papa.parse<Row>(raw, {
+    if (Array.isArray(cfg.data)) {
+      return Promise.resolve(cfg.data as Row[]);
+    }
+
+    const result = Papa.parse<Row>(cfg.data, {
       header: cfg.header ?? true,
       delimiter: cfg.delimiter ?? ',',
       skipEmptyLines: true,
