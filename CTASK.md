@@ -544,7 +544,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Create Grafana dashboard definitions in `docker/grafana/dashboards/`
 - Files: `src/observability/telemetry.ts`, `docker/grafana/dashboards/aurora-api.json`
 
-### [ ] TS-12.3 — Rate limiting and security hardening
+### [x] TS-12.3 — Rate limiting and security hardening
 - Install `@nestjs/throttler` (MIT) — configure globally: 100 req/min standard, 10 req/min auth endpoints
 - Add security headers middleware: CSP, X-Frame-Options, X-Content-Type-Options, HSTS
 - Input sanitization: `class-sanitizer` on all DTOs
@@ -552,7 +552,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Oracle connection: enforce read-only role for query engine data sources
 - Files: `src/common/middleware/security-headers.middleware.ts`, updates to `app.module.ts`
 
-### [ ] TS-12.4 — Oracle partition strategy for large tables
+### [x] TS-12.4 — Oracle partition strategy for large tables
 - **Oracle-native improvement:** Create `oracle/migrations/0016_partitioning.sql`
   - Partition `AUDIT_LOG` by `CREATED_AT` (range-monthly) — prevents unbounded table growth
   - Partition `REVISIONS` by `CREATED_AT` (range-quarterly) — old revisions stay queryable but on cheaper tablespace
