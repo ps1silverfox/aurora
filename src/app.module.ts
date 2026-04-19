@@ -13,6 +13,7 @@ import { ThemesModule } from './themes/themes.module';
 import { DataVizModule } from './data-viz/data-viz.module';
 import { PluginsModule } from './plugins/plugins.module';
 import { HookManagerModule } from './plugins/hook-manager.module';
+import { NotificationsModule } from './notifications/notification.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { HookManagerModule } from './plugins/hook-manager.module';
     DataVizModule,
     HookManagerModule,
     PluginsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

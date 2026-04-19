@@ -81,9 +81,11 @@ describe('MediaUploadedConsumer', () => {
 
 describe('WorkflowTransitionConsumer', () => {
   let consumer: WorkflowTransitionConsumer;
+  const mockNotifications = { onWorkflowTransition: jest.fn().mockResolvedValue(undefined) };
 
   beforeEach(() => {
-    consumer = new WorkflowTransitionConsumer();
+    jest.clearAllMocks();
+    consumer = new WorkflowTransitionConsumer(mockNotifications as never);
   });
 
   it('handles workflow.transition without throwing', async () => {

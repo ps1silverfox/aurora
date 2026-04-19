@@ -43,7 +43,7 @@ describe('PluginSandboxService', () => {
 
     it('throws ForbiddenException when blocks:register permission is missing', () => {
       const api = sandbox.buildSandboxedApi('id-1', makeManifest([]));
-      expect(() => api.registerBlockType('hero', 'HeroComponent', [])).toThrow(ForbiddenException);
+      expect(() => { api.registerBlockType('hero', 'HeroComponent', []); }).toThrow(ForbiddenException);
     });
 
     it('tags the block with the plugin name', () => {
@@ -63,7 +63,7 @@ describe('PluginSandboxService', () => {
 
     it('throws ForbiddenException when routes:register permission is missing', () => {
       const api = sandbox.buildSandboxedApi('id-1', makeManifest([]));
-      expect(() => api.registerRoute('GET', '/hello', jest.fn())).toThrow(ForbiddenException);
+      expect(() => { api.registerRoute('GET', '/hello', jest.fn()); }).toThrow(ForbiddenException);
     });
 
     it('stores pluginId on the route entry', () => {
@@ -79,7 +79,8 @@ describe('PluginSandboxService', () => {
       const api = sandbox.buildSandboxedApi('id-1', makeManifest(['routes:register']));
       api.registerRoute('GET', '/boom', () => { throw new Error('kaboom'); });
       const match = routeRegistry.find('test-plugin', 'GET', '/boom');
-      await expect(match!.handler({}, undefined, {})).rejects.toThrow('kaboom');
+      if (!match) throw new Error('route not found');
+      await expect(match.handler({}, undefined, {})).rejects.toThrow('kaboom');
     });
   });
 

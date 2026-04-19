@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { setAuthToken } from '../api/client';
+import { Notifications } from '../features/notifications/Notifications';
 
 interface NavItem {
   label: string;
@@ -74,6 +75,7 @@ export function AdminLayout({ userName = 'Admin', userRole = 'administrator' }: 
           >
             ☰
           </button>
+          <Notifications />
           <div className="admin-topbar__user-menu">
             <span className="admin-topbar__user-name">{userName}</span>
             <span className="admin-topbar__user-role">{userRole}</span>

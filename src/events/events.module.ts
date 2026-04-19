@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { DbModule } from '../db/db.module';
 import { SearchModule } from '../search/search.module';
 import { MediaModule } from '../media/media.module';
+import { NotificationsModule } from '../notifications/notification.module';
 import { OracleAqService } from './oracle-aq.service';
 import { EVENT_PUBLISHER } from './event-publisher.interface';
 import { AQ_CONSUMERS, AqConsumer } from './aq-consumer.interface';
@@ -14,7 +15,7 @@ import { WorkflowTransitionConsumer } from './consumers/workflow-transition.cons
 
 @Global()
 @Module({
-  imports: [DbModule, SearchModule, MediaModule],
+  imports: [DbModule, SearchModule, MediaModule, NotificationsModule],
   providers: [
     OracleAqService,
     { provide: EVENT_PUBLISHER, useExisting: OracleAqService },

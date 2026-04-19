@@ -490,13 +490,13 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - `AuditLogBrowser.tsx` — filterable paginated table (filter: entity type, actor, date range), expandable row shows diff JSON
 - Files: `frontend/src/features/users/UserList.tsx`, `frontend/src/features/users/RoleEditor.tsx`, `frontend/src/features/audit/AuditLogBrowser.tsx`
 
-### [ ] TS-10.4 — Data sources, themes, and settings UI
+### [x] TS-10.4 — Data sources, themes, and settings UI
 - `DataSourceList.tsx` — connection status indicator, test button, create/edit form
 - `ThemeManager.tsx` — installed themes, activate button, per-theme settings form
 - `SiteSettings.tsx` — site name, tagline, default language, cache management (Valkey flush button)
 - Files: `frontend/src/features/data-viz/DataSourceList.tsx`, `frontend/src/features/themes/ThemeManager.tsx`, `frontend/src/features/settings/SiteSettings.tsx`
 
-### [ ] TS-10.5 — Notifications and webhook stubs
+### [x] TS-10.5 — Notifications and webhook stubs
 - Implement `NotificationService` — called by `workflow-transition.consumer.ts` when page published/approved
 - Stub: log event + POST to configurable webhook URL (if `WEBHOOK_URL` env set)
 - Frontend: `Notifications.tsx` — in-app notification bell, polling `GET /api/v1/notifications` every 30s

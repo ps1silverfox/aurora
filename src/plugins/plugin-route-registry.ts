@@ -5,7 +5,7 @@ export type PluginRouteHandler = (
   params: Record<string, string>,
   body: unknown,
   query: Record<string, string>,
-) => Promise<unknown> | unknown;
+) => Promise<unknown>;
 
 interface RouteEntry {
   pluginId: string;
@@ -45,7 +45,8 @@ export class PluginRouteRegistry {
 
   unregisterPlugin(pluginName: string): void {
     for (let i = this.routes.length - 1; i >= 0; i--) {
-      if (this.routes[i]!.pluginName === pluginName) this.routes.splice(i, 1);
+      const entry = this.routes[i];
+      if (entry && entry.pluginName === pluginName) this.routes.splice(i, 1);
     }
   }
 }
