@@ -1,6 +1,8 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { DbModule } from './db/db.module';
 import { ObservabilityModule } from './observability/observability.module';
 import { AuthModule } from './auth/auth.module';
@@ -16,9 +18,14 @@ import { PluginsModule } from './plugins/plugins.module';
 import { HookManagerModule } from './plugins/hook-manager.module';
 import { NotificationsModule } from './notifications/notification.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
+import { SecurityHeadersMiddleware } from './common/middleware/security-headers.middleware';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      { name: 'default', ttl: 60000, limit: 100 },
+      { name: 'auth', ttl: 60000, limit: 10 },
+    ]),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     ObservabilityModule,
@@ -38,6 +45,15 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
     TaxonomyModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(SecurityHeadersMiddleware).forRoutes('*');
+  }
+}

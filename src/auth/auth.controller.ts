@@ -1,7 +1,9 @@
 import { Controller, Get, Query, Redirect } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Public } from './public.decorator';
 
 @Controller('api/v1/auth')
+@Throttle({ auth: { ttl: 60000, limit: 10 } })
 export class AuthController {
   private get keycloakBase(): string {
     const url = process.env['KEYCLOAK_URL'] ?? 'http://localhost:8080';
