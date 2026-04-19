@@ -477,7 +477,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Dashboard route: summary cards (published pages, open drafts, media size, active plugins, graduation metrics from Apex if integrated)
 - Files: `frontend/src/app/AdminLayout.tsx`, `frontend/src/app/routes.tsx`, `frontend/src/features/dashboard/Dashboard.tsx`
 
-### [ ] TS-10.2 — Pages and content management UI
+### [x] TS-10.2 — Pages and content management UI
 - `PageList.tsx` — table: title, status badge, author, last modified, actions (edit, publish, delete)
 - `PageEditor.tsx` — block editor (Phase 4) + metadata sidebar (slug, status, scheduled_at, tags, categories)
 - Workflow action buttons: Submit / Approve / Publish / Archive based on current status + user role

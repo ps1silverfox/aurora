@@ -3,6 +3,8 @@ import { AdminLayout } from './AdminLayout';
 import { Dashboard } from '../features/dashboard/Dashboard';
 import { PluginList } from '../features/plugins/PluginList';
 import { PluginSettings } from '../features/plugins/PluginSettings';
+import { PageList } from '../features/content/PageList';
+import { PageEditor } from '../features/content/PageEditor';
 
 function Placeholder({ label }: { label: string }) {
   return <div className="placeholder">{label} — coming soon</div>;
@@ -14,7 +16,8 @@ export const routes: RouteObject[] = [
     element: <AdminLayout />,
     children: [
       { index: true, element: <Dashboard /> },
-      { path: 'pages', element: <Placeholder label="Pages" /> },
+      { path: 'pages', element: <PageList /> },
+      { path: 'pages/:id', element: <PageEditor /> },
       { path: 'media', element: <Placeholder label="Media" /> },
       { path: 'data-sources', element: <Placeholder label="Data Sources" /> },
       { path: 'plugins', element: <PluginList /> },
