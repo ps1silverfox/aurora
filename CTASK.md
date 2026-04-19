@@ -517,7 +517,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write integration tests
 - Files: `oracle/migrations/0014_taxonomy.sql`, `src/taxonomy/taxonomy.service.ts`, `src/taxonomy/taxonomy.controller.ts`
 
-### [ ] TS-11.2 — Knowledge base features
+### [x] TS-11.2 — Knowledge base features
 - Add `VIEW_COUNT NUMBER DEFAULT 0` to `PAGES` (in base migration or new column migration)
 - Atomic increment: `UPDATE PAGES SET VIEW_COUNT = VIEW_COUNT + 1 WHERE ID = :id` (concurrency-safe in Oracle)
 - `PAGE_RATINGS` table: `ID RAW(16)`, `PAGE_ID RAW(16)`, `HELPFUL NUMBER(1) CHECK (HELPFUL IN (0,1))`, `CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP`

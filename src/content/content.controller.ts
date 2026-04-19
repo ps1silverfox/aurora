@@ -7,24 +7,34 @@ import {
   Param,
   Body,
   Query,
+  Req,
   HttpCode,
   Header,
   UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import type { Request } from 'express';
+import { IsBoolean } from 'class-validator';
 import { ContentService } from './content.service';
 import { WorkflowService } from './workflow.service';
+import { KnowledgeBaseService } from './knowledge-base.service';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { TransitionDto } from './dto/transition.dto';
 import { RolesGuard } from '../users/roles.guard';
 import { Roles } from '../users/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Public } from '../auth/public.decorator';
 import { AuthenticatedUser } from '../auth/types';
 import { NotFoundError, ForbiddenError, ValidationError } from '../common/errors';
 import { PageFilters } from './content.repository';
 import { PageStatus } from './entities/page.entity';
+
+class RatePageDto {
+  @IsBoolean()
+  helpful!: boolean;
+}
 
 const VALID_STATUSES = new Set<string>(['draft', 'review', 'approved', 'published', 'archived']);
 
@@ -45,6 +55,7 @@ export class ContentController {
   constructor(
     private readonly contentService: ContentService,
     private readonly workflowService: WorkflowService,
+    private readonly knowledgeBase: KnowledgeBaseService,
   ) {}
 
   @Post()
@@ -84,9 +95,30 @@ export class ContentController {
   @Get(':id')
   @Roles('content.pages.read')
   async findOne(@Param('id') id: string) {
-    const page = await this.contentService.getPage(id);
+    const [page, helpfulPct] = await Promise.all([
+      this.contentService.getPage(id),
+      this.knowledgeBase.getHelpfulPct(id),
+    ]);
     if (page == null) throw new NotFoundError(`Page ${id} not found`);
-    return page;
+    return { ...page, helpfulPct };
+  }
+
+  @Post(':id/view')
+  @Public()
+  @HttpCode(204)
+  async recordView(@Param('id') id: string, @Req() req: Request) {
+    const ip = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim()
+      ?? req.ip
+      ?? 'unknown';
+    await this.knowledgeBase.viewPage(id, ip);
+  }
+
+  @Post(':id/rate')
+  @Public()
+  @HttpCode(204)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async ratePage(@Param('id') id: string, @Body() dto: RatePageDto) {
+    await this.knowledgeBase.ratePage(id, dto.helpful);
   }
 
   @Put(':id')

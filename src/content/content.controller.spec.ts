@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { ContentController } from './content.controller';
 import { ContentService } from './content.service';
 import { WorkflowService } from './workflow.service';
+import { KnowledgeBaseService } from './knowledge-base.service';
 import { RolesGuard } from '../users/roles.guard';
 import { NotFoundError, ForbiddenError, ValidationError } from '../common/errors';
 import { AuthenticatedUser } from '../auth/types';
@@ -51,6 +52,7 @@ describe('ContentController', () => {
   let controller: ContentController;
   let contentService: jest.Mocked<ContentService>;
   let workflowService: jest.Mocked<WorkflowService>;
+  let knowledgeBase: jest.Mocked<KnowledgeBaseService>;
 
   beforeEach(async () => {
     contentService = {
@@ -69,11 +71,18 @@ describe('ContentController', () => {
       transition: jest.fn(),
     } as unknown as jest.Mocked<WorkflowService>;
 
+    knowledgeBase = {
+      viewPage: jest.fn().mockResolvedValue(undefined),
+      ratePage: jest.fn().mockResolvedValue(undefined),
+      getHelpfulPct: jest.fn().mockResolvedValue(null),
+    } as unknown as jest.Mocked<KnowledgeBaseService>;
+
     const module = await Test.createTestingModule({
       controllers: [ContentController],
       providers: [
         { provide: ContentService, useValue: contentService },
         { provide: WorkflowService, useValue: workflowService },
+        { provide: KnowledgeBaseService, useValue: knowledgeBase },
         { provide: RolesGuard, useValue: { canActivate: () => true } },
       ],
     })
@@ -125,10 +134,13 @@ describe('ContentController', () => {
   });
 
   describe('findOne', () => {
-    it('returns page when found', async () => {
+    it('returns page with helpfulPct when found', async () => {
       const page = makePage();
       contentService.getPage.mockResolvedValue(page);
-      await expect(controller.findOne(page.id)).resolves.toBe(page);
+      knowledgeBase.getHelpfulPct.mockResolvedValue(75);
+
+      const result = await controller.findOne(page.id);
+      expect(result).toMatchObject({ id: page.id, helpfulPct: 75 });
     });
 
     it('throws NotFoundError when page missing', async () => {
@@ -212,6 +224,21 @@ describe('ContentController', () => {
     it('throws NotFoundError for missing page', async () => {
       contentService.getPage.mockResolvedValue(null);
       await expect(controller.listRevisions('missing')).rejects.toBeInstanceOf(NotFoundError);
+    });
+  });
+
+  describe('recordView', () => {
+    it('delegates to knowledgeBase.viewPage with ip from header', async () => {
+      const req = { headers: { 'x-forwarded-for': '10.0.0.1' }, ip: '127.0.0.1' } as unknown as import('express').Request;
+      await controller.recordView('page-1', req);
+      expect(knowledgeBase.viewPage).toHaveBeenCalledWith('page-1', '10.0.0.1');
+    });
+  });
+
+  describe('ratePage', () => {
+    it('delegates to knowledgeBase.ratePage', async () => {
+      await controller.ratePage('page-1', { helpful: true });
+      expect(knowledgeBase.ratePage).toHaveBeenCalledWith('page-1', true);
     });
   });
 
