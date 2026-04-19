@@ -442,7 +442,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write integration tests
 - Files: `src/plugins/plugin-lifecycle.service.ts`, `src/plugins/plugins.controller.ts`
 
-### [ ] TS-9.3 — Hook system
+### [x] TS-9.3 — Hook system
 - Create `src/plugins/hook-manager.ts`:
   - `registerAction(hook, callback, priority)`, `doAction(hook, ...args)` — fires all registered callbacks in priority order
   - `registerFilter(hook, callback, priority)`, `applyFilters(hook, value, ...args)` — pipes value through callbacks
@@ -451,7 +451,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests: execution order, filter chaining, error isolation (one bad hook doesn't break others)
 - Files: `src/plugins/hook-manager.ts`, `src/plugins/hook-manager.module.ts`
 
-### [ ] TS-9.4 — Plugin sandboxing and custom endpoints
+### [x] TS-9.4 — Plugin sandboxing and custom endpoints
 - Plugin API: `registerBlockType(name, renderComponent, settingsSchema)` — adds to block registry
 - Plugin API: `registerRoute(method, path, handler)` — mounts under `/api/v1/plugins/{pluginName}/...`
 - Permission enforcement: every plugin service call checks plugin manifest `permissions` array
@@ -460,7 +460,7 @@ This mirrors the BIS project pattern. The `DbService` abstraction switches backe
 - Write unit tests for permission enforcement, rate limiting, error isolation
 - Files: `src/plugins/plugin-sandbox.ts`, `src/plugins/plugin-router.ts`
 
-### [ ] TS-9.5 — Plugin settings UI
+### [x] TS-9.5 — Plugin settings UI
 - Frontend: `frontend/src/features/plugins/PluginList.tsx` — installed plugins, status badge, activate/deactivate toggle
 - Per-plugin settings page: dynamic form generated from manifest `settings` array (schema: `{ key, label, type: 'text'|'number'|'boolean'|'select', options? }`)
 - API: `GET/PUT /api/v1/plugins/:id/settings`

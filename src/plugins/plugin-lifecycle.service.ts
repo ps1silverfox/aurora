@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger, NotFoundException, BadRequestException } fr
 import * as path from 'path';
 import { DB_SERVICE, IDbService } from '../db/db.interface';
 import { EVENT_PUBLISHER, IEventPublisher } from '../events/event-publisher.interface';
-import { Plugin, PluginRow, rowToPlugin } from './plugin.entity';
+import { Plugin, PluginRow, PluginSetting, rowToPlugin } from './plugin.entity';
 import { ContentService } from '../content/content.service';
 import { AuditService } from '../audit/audit.service';
 import { PluginSandboxService, SandboxedPluginApi } from './plugin-sandbox.service';
@@ -148,6 +148,63 @@ export class PluginLifecycleService {
       { name },
     );
     return rows[0] ? rowToPlugin(rows[0]) : undefined;
+  }
+
+  async getById(id: string): Promise<Plugin> {
+    return this.findById(id);
+  }
+
+  async getSettings(id: string): Promise<Record<string, string>> {
+    const plugin = await this.findById(id);
+    const rows = await this.db.query<PluginSetting>(
+      'SELECT KEY, VALUE FROM PLUGIN_SETTINGS WHERE PLUGIN_ID = :id',
+      { id },
+    );
+    // Merge DB values with manifest defaults
+    const result: Record<string, string> = {};
+    for (const s of plugin.manifest.settings) {
+      if (s.defaultValue === undefined || s.defaultValue === null) {
+          result[s.key] = '';
+        } else if (typeof s.defaultValue === 'string') {
+          result[s.key] = s.defaultValue;
+        } else if (typeof s.defaultValue === 'number' || typeof s.defaultValue === 'boolean') {
+          result[s.key] = `${s.defaultValue}`;
+        } else {
+          result[s.key] = JSON.stringify(s.defaultValue);
+        }
+    }
+    for (const row of rows) {
+      result[row.key] = row.value ?? '';
+    }
+    return result;
+  }
+
+  async updateSettings(id: string, updates: Record<string, string>): Promise<Record<string, string>> {
+    const plugin = await this.findById(id);
+    const validKeys = new Set(plugin.manifest.settings.map((s) => s.key));
+    for (const key of Object.keys(updates)) {
+      if (!validKeys.has(key)) {
+        throw new BadRequestException(`Unknown setting key: "${key}"`);
+      }
+    }
+    for (const [key, value] of Object.entries(updates)) {
+      const existing = await this.db.query<{ ID: string }>(
+        'SELECT ID FROM PLUGIN_SETTINGS WHERE PLUGIN_ID = :pluginId AND KEY = :key',
+        { pluginId: id, key },
+      );
+      if (existing.length > 0) {
+        await this.db.execute(
+          'UPDATE PLUGIN_SETTINGS SET VALUE = :value WHERE PLUGIN_ID = :pluginId AND KEY = :key',
+          { value, pluginId: id, key },
+        );
+      } else {
+        await this.db.execute(
+          'INSERT INTO PLUGIN_SETTINGS (ID, PLUGIN_ID, KEY, VALUE) VALUES (SYS_GUID(), :pluginId, :key, :value)',
+          { pluginId: id, key, value },
+        );
+      }
+    }
+    return this.getSettings(id);
   }
 
   private async findById(id: string): Promise<Plugin> {

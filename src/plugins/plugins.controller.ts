@@ -10,6 +10,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   Req,
 } from '@nestjs/common';
@@ -39,6 +40,11 @@ export class PluginsController {
     return this.blockRegistry.getAll();
   }
 
+  @Get(':id')
+  async getById(@Param('id') id: string): Promise<Plugin> {
+    return this.lifecycle.getById(id);
+  }
+
   @Post(':id/activate')
   @HttpCode(HttpStatus.OK)
   async activate(@Param('id') id: string): Promise<Plugin> {
@@ -55,6 +61,19 @@ export class PluginsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async uninstall(@Param('id') id: string): Promise<void> {
     return this.lifecycle.uninstall(id);
+  }
+
+  @Get(':id/settings')
+  async getSettings(@Param('id') id: string): Promise<Record<string, string>> {
+    return this.lifecycle.getSettings(id);
+  }
+
+  @Put(':id/settings')
+  async updateSettings(
+    @Param('id') id: string,
+    @Body() body: Record<string, string>,
+  ): Promise<Record<string, string>> {
+    return this.lifecycle.updateSettings(id, body);
   }
 
   // Dynamic plugin routes — must be declared last so specific routes above win
