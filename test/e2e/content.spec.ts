@@ -5,7 +5,7 @@ import { authHeaders } from './helpers';
  * Content E2E — create a page with text+image blocks, publish it,
  * verify the SSR output contains block content (CSV mode).
  */
-test.describe('Content lifecycle', () => {
+test.describe.serial('Content lifecycle', () => {
   let pageId: string;
 
   test('create page with text and image blocks', async ({ request }) => {
@@ -14,10 +14,10 @@ test.describe('Content lifecycle', () => {
         title: 'E2E Test Page',
         slug: 'e2e-test-page',
         blocks: [
-          { block_type: 'text', block_order: 0, content: { html: '<p>Hello world</p>' } },
+          { blockType: 'text', blockOrder: 0, content: { html: '<p>Hello world</p>' } },
           {
-            block_type: 'image',
-            block_order: 1,
+            blockType: 'image',
+            blockOrder: 1,
             content: { src: '/media/test.jpg', alt: 'test image' },
           },
         ],

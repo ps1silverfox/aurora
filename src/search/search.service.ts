@@ -17,7 +17,10 @@ export interface SearchFilters {
   limit?: number;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function rawToUuid(raw: Buffer | string): string {
+  if (typeof raw === 'string' && UUID_RE.test(raw)) return raw;
   return raw.toString('hex').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
 }
 

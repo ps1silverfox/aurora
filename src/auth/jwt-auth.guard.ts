@@ -7,8 +7,10 @@ import { IS_PUBLIC_KEY } from './public.decorator';
 
 // E2E_AUTH_BYPASS=true allows test suites to inject a mock user via X-Test-User-Id header.
 // Never set this in production — NODE_ENV guard below makes it a no-op outside test/development.
-const BYPASS_ENABLED =
-  process.env['E2E_AUTH_BYPASS'] === 'true' && process.env['NODE_ENV'] !== 'production';
+// Evaluated per-request so integration tests can set env before the first request.
+function isBypassEnabled(): boolean {
+  return process.env['E2E_AUTH_BYPASS'] === 'true' && process.env['NODE_ENV'] !== 'production';
+}
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -25,7 +27,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ]);
     if (isPublic) return true;
 
-    if (BYPASS_ENABLED) {
+    if (isBypassEnabled()) {
       const req = context.switchToHttp().getRequest<Request>();
       const testUserId = req.headers['x-test-user-id'] as string | undefined;
       if (testUserId) {
@@ -33,7 +35,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
           id: testUserId,
           email: `${testUserId}@test.local`,
           name: 'Test User',
-          roles: ['admin'],
+          roles: ['admin', 'admin.*'],
         };
         return true;
       }

@@ -28,3 +28,7 @@ export class ValidationError extends AppError {
     super(message);
   }
 }
+
+export class BadRequestError extends AppError {
+  readonly statusCode = 400;
+}

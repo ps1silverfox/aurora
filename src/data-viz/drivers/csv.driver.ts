@@ -14,7 +14,7 @@ export class CsvDriver implements IQueryDriver {
     const cfg = connectionConfig as unknown as CsvConfig;
 
     if (Array.isArray(cfg.data)) {
-      return Promise.resolve(cfg.data as Row[]);
+      return Promise.resolve(cfg.data);
     }
 
     const result = Papa.parse<Row>(cfg.data, {

@@ -5,7 +5,7 @@ import { authHeaders } from './helpers';
  * Media E2E — upload an image, verify it appears in the library,
  * then delete it (CSV mode; no actual file written to disk).
  */
-test.describe('Media', () => {
+test.describe.serial('Media', () => {
   let mediaId: string;
 
   test('upload image returns 201 with media record', async ({ request }) => {

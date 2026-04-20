@@ -61,6 +61,6 @@ describe('OracleAqService (csv-mode)', () => {
   });
 
   it('publish for unknown topic does not throw', () => {
-    expect(() => service.publish('unknown.topic', {})).not.toThrow();
+    expect(() => { service.publish('unknown.topic', {}); }).not.toThrow();
   });
 });

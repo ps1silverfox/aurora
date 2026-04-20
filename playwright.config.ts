@@ -18,9 +18,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run start:dev',
-    url: 'http://localhost:3000',
+    command: 'node dist/main.js',
+    url: 'http://127.0.0.1:3000/api/v1/pages',
     reuseExistingServer: !process.env['CI'],
+    timeout: 120_000,
     env: { DB_DRIVER: 'csv' },
   },
 });

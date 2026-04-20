@@ -2,11 +2,13 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { RolesGuard } from '../users/roles.guard';
 import { Roles } from '../users/roles.decorator';
-import { ValidationError } from '../common/errors';
+import { BadRequestError } from '../common/errors';
+
+const MIN_QUERY_LENGTH = 2;
 
 function parseLimit(raw: string | undefined): number {
   const n = raw != null ? parseInt(raw, 10) : 20;
-  if (isNaN(n) || n < 1 || n > 100) throw new ValidationError('limit must be 1–100');
+  if (isNaN(n) || n < 1 || n > 100) throw new BadRequestError('limit must be 1–100');
   return n;
 }
 
@@ -23,9 +25,12 @@ export class SearchController {
     @Query('cursor') cursor?: string,
     @Query('limit') limit?: string,
   ) {
-    if (!q || q.trim() === '') throw new ValidationError('q parameter is required');
+    const trimmed = q?.trim() ?? '';
+    if (trimmed.length < MIN_QUERY_LENGTH) {
+      throw new BadRequestError(`q must be at least ${MIN_QUERY_LENGTH} characters`);
+    }
     return this.searchService.search({
-      query: q.trim(),
+      query: trimmed,
       status,
       cursor,
       limit: parseLimit(limit),

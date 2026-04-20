@@ -8,6 +8,7 @@ import { AuditService } from '../audit/audit.service';
 import { PluginSandboxService } from './plugin-sandbox.service';
 import { BlockRegistry } from './block-registry';
 import { PluginRouteRegistry } from './plugin-route-registry';
+import { HookManager } from './hook-manager';
 
 // Block real require() calls to plugins/
 jest.mock('path', () => {
@@ -68,6 +69,7 @@ describe('PluginLifecycleService', () => {
         { provide: PluginSandboxService, useValue: { buildSandboxedApi: jest.fn().mockReturnValue({}) } },
         { provide: BlockRegistry, useValue: { unregisterByPlugin: jest.fn() } },
         { provide: PluginRouteRegistry, useValue: { unregisterPlugin: jest.fn() } },
+        { provide: HookManager, useValue: { registerAction: jest.fn(), removeAction: jest.fn() } },
       ],
     }).compile();
 
@@ -106,7 +108,8 @@ describe('PluginLifecycleService', () => {
     });
 
     it('sets status=error and throws BadRequestException when entrypoint cannot be loaded', async () => {
-      mockDb.query.mockResolvedValue([inactiveRow]);
+      const missingPluginRow = { ...inactiveRow, NAME: 'does-not-exist-plugin' };
+      mockDb.query.mockResolvedValue([missingPluginRow]);
       await expect(service.activate('plugin-id-1')).rejects.toThrow(BadRequestException);
       expect(mockDb.execute).toHaveBeenCalledWith(
         expect.stringMatching(/UPDATE PLUGINS SET STATUS = 'error'/i),

@@ -9,7 +9,7 @@ import { authHeaders } from './helpers';
  * role-based guard approvals are exercised via the same actor (sufficient to
  * verify the transition state machine end-to-end).
  */
-test.describe('Workflow', () => {
+test.describe.serial('Workflow', () => {
   let pageId: string;
 
   test('create draft page', async ({ request }) => {
@@ -17,7 +17,7 @@ test.describe('Workflow', () => {
       data: {
         title: 'Workflow E2E Page',
         slug: 'workflow-e2e-page',
-        blocks: [{ block_type: 'text', block_order: 0, content: { html: '<p>Workflow test</p>' } }],
+        blocks: [{ blockType: 'text', blockOrder: 0, content: { html: '<p>Workflow test</p>' } }],
       },
       headers: authHeaders(),
     });

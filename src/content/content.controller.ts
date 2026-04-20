@@ -161,6 +161,7 @@ export class ContentController {
   }
 
   @Post(':id/transition')
+  @HttpCode(200)
   @Roles('content.pages.read')
   async transition(
     @Param('id') id: string,

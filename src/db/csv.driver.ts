@@ -83,7 +83,8 @@ function selectColumns(row: Row, sql: string): Row {
   const selected: Row = {};
   colClause.split(',').forEach((expr) => {
     const parts = expr.trim().split(/\s+AS\s+/i);
-    const srcCol = (parts[0] ?? '').trim().toUpperCase();
+    const srcRaw = (parts[0] ?? '').trim().toUpperCase();
+    const srcCol = srcRaw.includes('.') ? (srcRaw.split('.').pop() ?? srcRaw) : srcRaw;
     const alias = (parts[1] ?? srcCol).trim().toUpperCase();
     selected[alias] = row[srcCol] ?? null;
   });

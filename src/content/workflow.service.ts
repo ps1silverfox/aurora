@@ -3,7 +3,7 @@ import { ContentRepository } from './content.repository';
 import { AuditService } from '../audit/audit.service';
 import { EVENT_PUBLISHER, IEventPublisher } from '../events/event-publisher.interface';
 import { Page, PageStatus } from './entities/page.entity';
-import { ForbiddenError } from '../common/errors';
+import { ConflictError, ForbiddenError } from '../common/errors';
 
 export interface Actor {
   id: string;
@@ -44,7 +44,9 @@ export class WorkflowService {
 
     const def = TRANSITIONS[action];
     if (page.status !== def.from) {
-      throw new Error(`Cannot perform '${action}' on a page with status '${page.status}'`);
+      throw new ConflictError(
+        `Cannot perform '${action}' on a page with status '${page.status}'`,
+      );
     }
     if (!def.allowedRoles.includes(actor.role)) {
       throw new ForbiddenError(`Role '${actor.role}' cannot perform action '${action}'`);

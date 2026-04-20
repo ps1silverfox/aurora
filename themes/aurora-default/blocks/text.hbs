@@ -1,3 +1,7 @@
 <div class="block block-text">
-  <p style="font-size:1rem;line-height:1.7;color:#374151;">{{block.content.text}}</p>
+  {{#if block.content.html}}
+    <div class="rich-text" style="font-size:1rem;line-height:1.7;color:#374151;">{{{block.content.html}}}</div>
+  {{else}}
+    <p style="font-size:1rem;line-height:1.7;color:#374151;">{{block.content.text}}</p>
+  {{/if}}
 </div>

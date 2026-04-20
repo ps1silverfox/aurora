@@ -14,9 +14,9 @@ test.describe('Search', () => {
   test('search endpoint returns 200 with q param', async ({ request }) => {
     const res = await request.get('/api/v1/search?q=test', { headers: authHeaders() });
     expect(res.status()).toBe(200);
-    const body = (await res.json()) as { data: unknown[]; meta: unknown };
+    const body = (await res.json()) as { data: unknown[]; nextCursor: string | null };
     expect(Array.isArray(body.data)).toBe(true);
-    expect(body.meta).toBeDefined();
+    expect(body).toHaveProperty('nextCursor');
   });
 
   test('search endpoint supports status filter', async ({ request }) => {

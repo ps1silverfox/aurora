@@ -3,6 +3,7 @@ import type { Response } from 'express';
 import { AppError, ValidationError } from '../errors';
 
 const HTTP_TITLES: Record<number, string> = {
+  400: 'Bad Request',
   403: 'Forbidden',
   404: 'Not Found',
   409: 'Conflict',

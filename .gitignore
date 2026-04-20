@@ -40,3 +40,6 @@ progress/
 wallet/
 *.p12
 *.jks
+
+# Local media storage
+storage/
